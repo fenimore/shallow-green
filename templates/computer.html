@@ -25,6 +25,7 @@
 	<div id="help" >
 	    <ul>
 		<li>To Castle, move the king <i>onto</i> the target Rook</li>
+		<li>The computers last move destination will be highlighted in green</li>
 	    </ul>
 	</div>
 	<table>
@@ -98,7 +99,11 @@
 	 var help = document.getElementById("help");
 	 help.style.display = "none";
 	 function showHelp() {
-	     help.style.display = "block";
+	     if (help.offsetParent === null) {
+		 help.style.display = "block";
+	     } else {
+		 help.style.display ="none";
+		 }
 	 }
 	</script>    
     </body>  
