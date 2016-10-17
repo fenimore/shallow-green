@@ -36,6 +36,15 @@ func Index(w http.ResponseWriter,
 	t.Execute(w, gameList)
 }
 
+func About(w http.ResponseWriter,
+	r *http.Request) {
+	t, err := template.ParseFiles("templates/about.html")
+	if err != nil {
+		fmt.Printf("Error %s Templates", err)
+	}
+	t.Execute(w, nil)
+}
+
 func NewGame(w http.ResponseWriter,
 	r *http.Request) {
 	vars := mux.Vars(r)

@@ -62,6 +62,12 @@ var routes = Routes{
 		"/play/{id}/{orig}/{dest}",
 		PlayGame,
 	},
+	Route{
+		"About",
+		"GET",
+		"/about",
+		About,
+	},
 	// New websockets
 	// Show websockets
 	// response websockets
