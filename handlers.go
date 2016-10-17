@@ -149,20 +149,33 @@ func PlayGame(w http.ResponseWriter,
 			GameId:   id,
 		}
 	} else {
-		now := time.Now()
-		state, err := ghess.MiniMax(0, 3, ghess.GetState(&game))
-		if err != nil {
-			fmt.Println("> Minimax broken")
-		}
-		game.Move(state.Init[0], state.Init[1])
-		msg := fmt.Sprintf("> Your Move, my move took %s",
-			time.Since(now))
-		mv = &Move{
-			Position: game.Position(),
-			Message:  msg,
-			LastMove: game.PieceMap[state.Init[1]],
-			LastOrig: game.PieceMap[state.Init[0]],
-			GameId:   id,
+		if game.Checkmate {
+			msg := "> I've been Checkmated!"
+			mv = &Move{
+				Position: game.Position(),
+				Message:  msg,
+				GameId:   id,
+			}
+		} else {
+			now := time.Now()
+			state, err := ghess.MiniMax(0, 3, ghess.GetState(&game))
+			if err != nil {
+				fmt.Println("> Minimax broken")
+			}
+			game.Move(state.Init[0], state.Init[1])
+			msg := fmt.Sprintf("> Your Move, my move took %s",
+				time.Since(now))
+			if game.Checkmate {
+				msg = "Game Over, Checkmate"
+			}
+			mv = &Move{
+				Position: game.Position(),
+				Message:  msg,
+				LastMove: game.PieceMap[state.Init[1]],
+				LastOrig: game.PieceMap[state.Init[0]],
+				GameId:   id,
+			}
+
 		}
 		err = db.Update(func(tx *bolt.Tx) error {
 			bucket := tx.Bucket(games)
