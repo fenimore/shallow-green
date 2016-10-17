@@ -77,6 +77,7 @@
 	     x.open("POST", "/play/"+ id +"/"+source+"/"+target, true);
 	     feedback.innerHTML = "<b>> Ok, I'm Thinking . . .</b>";
 	     loading.style.visibility = "visible";
+	     x.ontimeout = function () { alert("Timed out! Refresh the Page"); }
 	     x.send();
 	 };
 	 
