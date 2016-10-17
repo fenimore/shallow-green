@@ -1,0 +1,25 @@
+{
+	"ImportPath": "github.com/polypmer/growser",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v74",
+	"Deps": [
+		{
+			"ImportPath": "github.com/boltdb/bolt",
+			"Comment": "v1.3.0-2-gec58b76",
+			"Rev": "ec58b76ba0e6b190fed15db6911036a5760d2145"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Comment": "v1.1-27-g757bef9",
+			"Rev": "757bef944d0f21880861c2dd9c871ca543023cba"
+		},
+		{
+			"ImportPath": "github.com/polypmer/ghess",
+			"Rev": "b2307444e62c57827d0d9e1142ec9f577293d315"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "a646d33e2ee3172a661fc09bca23bb4889a41bc8"
+		}
+	]
+}
