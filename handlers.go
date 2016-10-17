@@ -25,7 +25,18 @@ func Index(w http.ResponseWriter,
 
 func NewGame(w http.ResponseWriter,
 	r *http.Request) {
-	fmt.Fprintln(w, "new GamE")
+	// new Board
+	// Make first move if black
+}
+
+func ViewGame(w http.ResponseWriter,
+	r *http.Request) {
+
+}
+
+func PlayGame(w http.ResponseWriter,
+	r *http.Request) {
+
 }
 
 /* AI Game */

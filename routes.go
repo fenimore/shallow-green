@@ -42,6 +42,24 @@ var routes = Routes{
 		"/",
 		Index,
 	},
+	Route{
+		"NewAi",
+		"GET",
+		"/new/{player}",
+		NewGame,
+	},
+	Route{
+		"ViewAi",
+		"GET",
+		"/view/{id}",
+		ViewGame,
+	},
+	Route{
+		"PlayAi",
+		"GET",
+		"/play/{id}/{orig}/{dest}",
+		PlayGame,
+	},
 	// New websockets
 	// New ai game (ajax)
 	// Show websockets
