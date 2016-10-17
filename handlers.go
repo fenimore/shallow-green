@@ -163,10 +163,12 @@ func PlayGame(w http.ResponseWriter,
 				fmt.Println("> Minimax broken")
 			}
 			game.Move(state.Init[0], state.Init[1])
-			msg := fmt.Sprintf("> Your Move, my move took %s",
+			msg := fmt.Sprintf("> Your Move, <i>my move took %s</i>",
 				time.Since(now))
 			if game.Checkmate {
-				msg = "Game Over, Checkmate"
+				msg = "> Game Over, Checkmate"
+			} else if game.Check {
+				msg = fmt.Sprintf("> Check! My move took %s", time.Since(now))
 			}
 			mv = &Move{
 				Position: game.Position(),
