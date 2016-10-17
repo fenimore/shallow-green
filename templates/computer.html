@@ -20,7 +20,7 @@
     <body>
 	
 	<h1>Ghess</h1>
-	<a href="/new" >New Game</a>|<a href="/" >Index</a> |
+	<a href="/new/white" >New Game</a>|<a href="/" >Index</a> |
 	<a href=# onclick="showHelp()" >Help</a>
 	<div id="help" >
 	    <ul>
@@ -45,7 +45,9 @@
 	 // TODO: Highlight Last move:
 	 // http://chessboardjs.com/examples#5004
 	 var feedback = document.getElementById("output");
-	 var lodaing = document.getElementById("loading");
+	 var loading = document.getElementById("loading");
+	 var id = {{ .Id }};
+	 var pos = {{ .Position }};
 	 //var log = document.getElementById("output");
 	 // This onDrop function has other param which I don't use
 	 var parseStand = function(source, target) {
@@ -53,6 +55,7 @@
 	     var x = new XMLHttpRequest();
 	     x.onreadystatechange = function() {
 		 if(x.readyState == 4) {
+		     console.log(x.response);
 		     var data = JSON.parse(x.response);
 		     console.log(data.message);
 		     console.log(data.position);		     
@@ -71,13 +74,13 @@
 		     sq[0].className += " highlight";
 		 }
 	     }
-	     x.open("POST", "/move/"+source+"/"+target, true);
+	     x.open("POST", "/play/"+ id +"/"+source+"/"+target, true);
 	     feedback.innerHTML = "<b>> Ok, I'm Thinking . . .</b>";
 	     loading.style.visibility = "visible";
 	     x.send();
 	 };
 	 
-	 var pos = {{ . }}
+
 	 //'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	 var config = {
 	     draggable: true,

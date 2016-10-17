@@ -56,7 +56,7 @@ var routes = Routes{
 	},
 	Route{
 		"PlayAi",
-		"GET",
+		"POST",
 		"/play/{id}/{orig}/{dest}",
 		PlayGame,
 	},

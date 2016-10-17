@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -48,7 +49,7 @@ func NewGame(w http.ResponseWriter,
 
 	// Key Value Pair
 	value := []byte(game.Position())
-	key := []byte(time.Now().String())
+	key := []byte(time.Now().Format("15:04:05"))
 	// Add to Database
 	err := db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte("games"))
@@ -66,7 +67,11 @@ func NewGame(w http.ResponseWriter,
 	}
 	// Redirect to View Board
 	http.Redirect(w, r, "/view/"+string(key), http.StatusSeeOther)
+}
 
+type Game struct {
+	Position string
+	Id       string
 }
 
 func ViewGame(w http.ResponseWriter,
@@ -92,13 +97,76 @@ func ViewGame(w http.ResponseWriter,
 	if err != nil {
 		fmt.Printf("Error %s Templates", err)
 	}
+	g := Game{Position: pos, Id: id}
+	t.Execute(w, g)
+}
 
-	t.Execute(w, pos)
+type Move struct {
+	Position string `json:"position"`
+	Message  string `json:"message"`
+	LastMove string `json:"target"`
+	GameId   string `json:"id"`
 }
 
 // AJAX call to make move
 func PlayGame(w http.ResponseWriter,
 	r *http.Request) {
+	// Passed Parameters
+	vars := mux.Vars(r)
+	id := vars["id"]
+	orig := vars["orig"]
+	dest := vars["dest"]
+	fmt.Println(id, orig, dest)
+	var pos string
+	// Get game from DB
+	err := db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket(games)
+		if bucket == nil {
+			return errors.New("No bucket")
+		}
+		val := bucket.Get([]byte(id))
+		pos = string(val)
+		return nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Set up board
+	game := ghess.NewBoard()
+	err = game.LoadFen(pos)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Make move and ask AI
+	mv := &Move{}
+	err = game.ParseStand(orig, dest)
+	if err != nil {
+		mv = &Move{
+			Position: game.Position(),
+			Message:  "> That's not a Valid Move!",
+			GameId:   id,
+		}
+	} else {
+		now := time.Now()
+		state, err := ghess.MiniMax(0, 3, ghess.GetState(&game))
+		if err != nil {
+			fmt.Println("> Minimax broken")
+		}
+		game.Move(state.Init[0], state.Init[1])
+		msg := fmt.Sprintf("> Your Move, my move took %s",
+			time.Since(now))
+		mv = &Move{
+			Position: game.Position(),
+			Message:  msg,
+			LastMove: game.PieceMap[state.Init[1]],
+			GameId:   id,
+		}
+	}
+	js, err := json.Marshal(mv)
+	if err != nil {
+		fmt.Println(err)
+	}
+	w.Write([]byte(js))
 
 }
 

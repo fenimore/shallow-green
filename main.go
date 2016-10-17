@@ -3,10 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/boltdb/bolt"
-	"github.com/polypmer/ghess"
 )
 
 // TODO:
@@ -19,13 +17,6 @@ import (
 var games = []byte("games")
 
 var db *bolt.DB
-
-type Game struct {
-	g       ghess.Board
-	white   string
-	black   string
-	created time.Time
-}
 
 // Open Bolddb connection
 
