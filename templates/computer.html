@@ -89,7 +89,10 @@
 	     onDrop: parseStand,
 	 };
 	 var board = ChessBoard('board', config);
-	 board.flip();
+	 var turn  = pos.split(" ")[1];
+	 if (turn === "b") {
+	     board.flip();
+	 }
 
 	 var help = document.getElementById("help");
 	 help.style.display = "none";
