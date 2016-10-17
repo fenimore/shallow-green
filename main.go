@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,46 +9,37 @@ import (
 	"github.com/polypmer/ghess"
 )
 
+// TODO:
+// The keys for games will be unix time.
+// Should these get to be a certain time before a certain
+// time, then delete them.
+// TODO:
+// Name ai
+
 var games = []byte("games")
 
+var db *bolt.DB
+
 type Game struct {
-	g    ghess.Board
-	date time.Time
+	g       ghess.Board
+	white   string
+	black   string
+	created time.Time
 }
 
 // Open Bolddb connection
 
 func main() {
-	db, err := bolt.Open("games.db", 0644, nil)
+	// Handle DB connection
+	blt, err := bolt.Open("games.db", 0644, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
-	defer db.Close()
-	key := []byte("1")
+	defer blt.Close()
+	db = blt
 
-	// Read
-	err = db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket(games)
-		if bucket == nil {
-			return errors.New("No bucket")
-		}
-		val := bucket.Get(key)
-		fmt.Println(string(val))
-		return nil
-	})
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// Write Put
-
-	value := []byte("hello")
 	err = db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(games)
-		if err != nil {
-			return err
-		}
-		err = bucket.Put(key, value)
+		_, err := tx.CreateBucketIfNotExists([]byte("games"))
 		if err != nil {
 			return err
 		}

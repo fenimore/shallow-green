@@ -1,0 +1,16 @@
+<html>
+    <link href="/css/style.css" rel="stylesheet">
+    <h1>Ghess Index</h1>
+    <a href=/new/black >New Game Computer Vs Human</a><br>
+    <a href=/new/white >New Game Human Vs Computer</a><br>
+    <hr>
+    <ul>
+	<h2>Existing Games</h2>
+    {{ range $key, $value := . }}
+	<li><strong><a href="view/{{ $key }}">{{ $key }}</a></strong>:
+	    <br>{{ $value }}</li>
+    {{ end }}
+    </ul>
+    <br><br><br>
+    <a href="https://github.com/polypmer/go-chess">Source Code</a>
+</html>
