@@ -61,11 +61,8 @@ var routes = Routes{
 		PlayGame,
 	},
 	// New websockets
-	// New ai game (ajax)
 	// Show websockets
-	// Show ai
 	// response websockets
-	// response ai
 	// about?
 }
 

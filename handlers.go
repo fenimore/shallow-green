@@ -116,7 +116,6 @@ func PlayGame(w http.ResponseWriter,
 	id := vars["id"]
 	orig := vars["orig"]
 	dest := vars["dest"]
-	fmt.Println(id, orig, dest)
 	var pos string
 	// Get game from DB
 	err := db.View(func(tx *bolt.Tx) error {
@@ -161,6 +160,14 @@ func PlayGame(w http.ResponseWriter,
 			LastMove: game.PieceMap[state.Init[1]],
 			GameId:   id,
 		}
+		err = db.Update(func(tx *bolt.Tx) error {
+			bucket := tx.Bucket(games)
+			err = bucket.Put([]byte(id), []byte(game.Position()))
+			if err != nil {
+				return err
+			}
+			return nil
+		})
 	}
 	js, err := json.Marshal(mv)
 	if err != nil {
