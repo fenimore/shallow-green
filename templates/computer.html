@@ -65,13 +65,14 @@
 		     // Highlight last move
 		     var hl = document.getElementsByClassName("highlight");
 		     if (hl[0] != undefined) {
-			 console.log(hl[0])
 			 hl[0].className = hl[0].className.replace(/\bhighlight\b/g,'');
-			 console.log(hl[0])			 
-			 //hl[0].className.replace( /(?:^|\s)highlight(?!\S)/g , '' );			 
+		//	 hl[1].className = hl[1].className.replace(/\bhighlight\b/g,'');
 		     }
 		     var sq = document.getElementsByClassName("square-" + data.target);
+		     //var orig = document.getElementsByClassName("square-" + data.origin);		     
 		     sq[0].className += " highlight";
+		     //orig[0].className += " highlight";
+
 		 }
 	     }
 	     x.open("POST", "/play/"+ id +"/"+source+"/"+target, true);

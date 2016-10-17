@@ -101,10 +101,12 @@ func ViewGame(w http.ResponseWriter,
 	t.Execute(w, g)
 }
 
+// Move is what the browser needs to make calls etc
 type Move struct {
 	Position string `json:"position"`
 	Message  string `json:"message"`
 	LastMove string `json:"target"`
+	LastOrig string `json:"origin"`
 	GameId   string `json:"id"`
 }
 
@@ -158,6 +160,7 @@ func PlayGame(w http.ResponseWriter,
 			Position: game.Position(),
 			Message:  msg,
 			LastMove: game.PieceMap[state.Init[1]],
+			LastOrig: game.PieceMap[state.Init[0]],
 			GameId:   id,
 		}
 		err = db.Update(func(tx *bolt.Tx) error {
