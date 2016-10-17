@@ -42,6 +42,8 @@ func main() {
 
 	// connection
 	router := NewRouter()
+	//http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("static/img"))))
+	fmt.Println("Serving Chess on :8080")
 	err = http.ListenAndServe(":8080", router)
 	if err != nil {
 		fmt.Println(err)
