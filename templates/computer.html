@@ -55,7 +55,6 @@
 	     var x = new XMLHttpRequest();
 	     x.onreadystatechange = function() {
 		 if(x.readyState == 4) {
-		     console.log(x.response);
 		     var data = JSON.parse(x.response);
 		     console.log(data.message);
 		     console.log(data.position);		     
@@ -89,6 +88,7 @@
 	     onDrop: parseStand,
 	 };
 	 var board = ChessBoard('board', config);
+	 // Orient the board for whose turn according to the Fen so loaded
 	 var turn  = pos.split(" ")[1];
 	 if (turn === "b") {
 	     board.flip();

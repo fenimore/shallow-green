@@ -98,6 +98,7 @@ func ViewGame(w http.ResponseWriter,
 		fmt.Printf("Error %s Templates", err)
 	}
 	g := Game{Position: pos, Id: id}
+
 	t.Execute(w, g)
 }
 
