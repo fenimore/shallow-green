@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 
@@ -21,6 +22,7 @@ var db *bolt.DB
 // Open Bolddb connection
 
 func main() {
+	portFlag := flag.String("port", "8080", "the server port, prefixed by :")
 	// Handle DB connection
 	blt, err := bolt.Open("games.db", 0644, nil)
 	if err != nil {
@@ -43,8 +45,8 @@ func main() {
 	// connection
 	router := NewRouter()
 	//http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("static/img"))))
-	fmt.Println("Serving Chess on :8080")
-	err = http.ListenAndServe(":8080", router)
+	fmt.Println("Serving Chess on :" + *portFlag)
+	err = http.ListenAndServe(":"+*portFlag, router)
 	if err != nil {
 		fmt.Println(err)
 	}
