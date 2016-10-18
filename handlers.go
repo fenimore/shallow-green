@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"time"
 
@@ -167,7 +168,7 @@ func PlayGame(w http.ResponseWriter,
 			}
 		} else {
 			now := time.Now()
-			state, err := ghess.MiniMax(0, 3, ghess.GetState(&game))
+			state, err := ghess.MiniMaxPruning(0, 3, ghess.GetState(&game))
 			if err != nil {
 				fmt.Println("> Minimax broken")
 			}
@@ -205,5 +206,107 @@ func PlayGame(w http.ResponseWriter,
 
 }
 
-/* AI Game */
-// TODO:
+/* Websockets! */
+
+func NewChallenge(w http.ResponseWriter,
+	r *http.Request) {
+	game := ghess.NewBoard()
+
+	// Key Value Pair
+	value := []byte(game.Position())
+	key := []byte(time.Now().Format("15:04:05"))
+	// Add to Database
+	err := db.Update(func(tx *bolt.Tx) error {
+		bucket, err := tx.CreateBucketIfNotExists([]byte("games"))
+		if err != nil {
+			return err
+		}
+		err = bucket.Put(key, value)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Redirect to View Board
+	http.Redirect(w, r, "/challenge/"+string(key), http.StatusSeeOther)
+}
+
+func ViewChallenge(w http.ResponseWriter,
+	r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	var pos string
+	// Template
+	t, err := template.ParseFiles("templates/versus.html")
+	if err != nil {
+		fmt.Printf("Error %s Templates", err)
+	}
+	// Get From Database
+	err = db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte("games"))
+		if bucket == nil {
+			return errors.New("No bucket")
+		}
+		val := bucket.Get([]byte(id))
+		pos = string(val)
+		return nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	g := Game{Position: pos, Id: id}
+
+	t.Execute(w, g)
+}
+
+func WebSocket(w http.ResponseWriter,
+	r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	serveWs(hub, id, w, r)
+}
+
+// serveWs handles websocket requests from the peer.
+func serveWs(h *Hub, id string, w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	fmt.Println(h)
+	client := &Client{hub: h, conn: conn, send: make(chan []byte, 256)}
+	fmt.Println(client)
+	fmt.Println(client.hub)
+	fmt.Println(client.hub.register)
+	client.hub.register <- client
+
+	var pos string
+	// Get game from DB
+	err = db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte("games"))
+		if bucket == nil {
+			return errors.New("No bucket")
+		}
+		val := bucket.Get([]byte(id))
+		pos = string(val)
+		return nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Set up board
+	game := ghess.NewBoard()
+	err = game.LoadFen(pos)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	go client.writePump(game)
+	// So every time this handler is called
+	// the client reads the pump
+	client.readPump()
+}

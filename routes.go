@@ -68,6 +68,24 @@ var routes = Routes{
 		"/about",
 		About,
 	},
+	Route{
+		"NewChallenge",
+		"GET",
+		"/newchallenge",
+		NewChallenge,
+	},
+	Route{
+		"WebSocket",
+		"GET", // I dunno
+		"/ws/{id}",
+		WebSocket,
+	},
+	Route{
+		"ViewChallenge",
+		"GET",
+		"/challenge/{id}",
+		ViewChallenge,
+	},
 	// New websockets
 	// Show websockets
 	// response websockets

@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/boltdb/bolt"
 )
@@ -19,6 +18,7 @@ import (
 var games = []byte("games")
 
 var db *bolt.DB
+var hub *Hub
 
 // Open Bolddb connection
 
@@ -43,11 +43,17 @@ func main() {
 		fmt.Println(err)
 	}
 
+	// Launch websocket hub
+	hub := newHub()
+	fmt.Println(hub)
+	go hub.run()
+
 	// connection
 	router := NewRouter()
 	//http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("static/img"))))
 	fmt.Println("Serving Chess on :" + *portFlag)
-	err = http.ListenAndServe(":"+os.Getenv("PORT"), router)
+	//	err = http.ListenAndServe(":"+os.Getenv("PORT"), router) //HEROKU
+	err = http.ListenAndServe(":"+*portFlag, router)
 	if err != nil {
 		fmt.Println(err)
 	}
