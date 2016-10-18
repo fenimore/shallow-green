@@ -4,13 +4,29 @@
     <a href=/new/black >New Game <b>Computer Vs Human</b></a><br>
     <a href=/new/white >New Game <b>Human Vs Computer</b></a><br>
     <hr>
-    <ul>
-	<h2>Existing Games</h2>
-    {{ range $key, $value := . }}
-	<li><strong><a href="view/{{ $key }}">{{ $key }}</a></strong>:
-	    <br>{{ $value }}</li>
-    {{ end }}
-    </ul>
+    <table>
+	<tr>
+	    <td>
+		<h2>Existing Games Against AI</h2>
+		<ul>
+		{{ range $key, $value := . }}
+		<li><strong><a href="view/{{ $key }}">{{ $key }}</a></strong>:
+		    <br>{{ $value }}</li>
+		    {{ end }}
+                </ul>
+	    </td>
+	    <td>
+		<h2>Existing Games Against AI</h2>
+		<ul>
+		    {{ range $key, $value := . }}
+		    <li><strong><a href="view/{{ $key }}">{{ $key }}</a></strong>:
+			<br>{{ $value }}</li>
+			{{ end }}
+                </ul>
+	    </td>
+	</tr>
+    </table>
+
     <br><br><br>
     <a href="https://github.com/polypmer/go-chess">Source Code</a> | <a href="/about" >About</a>
 </html>

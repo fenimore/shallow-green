@@ -18,6 +18,7 @@ import (
 func Index(w http.ResponseWriter,
 	r *http.Request) {
 	var gameList = make(map[string]string)
+	var challList = make(map[string]string)
 	db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte("games"))
@@ -28,12 +29,22 @@ func Index(w http.ResponseWriter,
 		}
 		return nil
 	})
+	db.View(func(tx *bolt.Tx) error {
+		// Assume bucket exists and has keys
+		b := tx.Bucket([]byte("challenges"))
+		c := b.Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			// k key v value
+			challList[string(k)] = string(v)
+		}
+		return nil
+	})
 
 	t, err := template.ParseFiles("templates/index.html")
 	if err != nil {
 		fmt.Printf("Error %s Templates", err)
 	}
-
+	// Add a struct
 	t.Execute(w, gameList)
 }
 
