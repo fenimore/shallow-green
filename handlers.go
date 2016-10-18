@@ -14,18 +14,23 @@ import (
 	"github.com/polypmer/ghess"
 )
 
+type GameList struct {
+	Ai map[string]string
+	Vs map[string]string
+}
+
 // Index page, link to new game
 func Index(w http.ResponseWriter,
 	r *http.Request) {
-	var gameList = make(map[string]string)
-	var challList = make(map[string]string)
+	gameList := GameList{Ai: make(map[string]string), Vs: make(map[string]string)}
+
 	db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte("games"))
 		c := b.Cursor()
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			// k key v value
-			gameList[string(k)] = string(v)
+			gameList.Ai[string(k)] = string(v)
 		}
 		return nil
 	})
@@ -35,7 +40,7 @@ func Index(w http.ResponseWriter,
 		c := b.Cursor()
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			// k key v value
-			challList[string(k)] = string(v)
+			gameList.Vs[string(k)] = string(v)
 		}
 		return nil
 	})

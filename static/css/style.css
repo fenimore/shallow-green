@@ -6,9 +6,12 @@ body {
     line-height: 1.5;
     color: #566b78;
     font-family: 'Inconsolata', monospace;
-    padding: 2em 1em;
     margin: 0 auto;
-    max-width: 60em;
+}
+
+body.content{
+    max-width: 60em
+    padding: 2em 1em;		   
 }
 
 .content {
@@ -41,7 +44,6 @@ ul {
 
 
 h2 {
-    margin-top: 1em;
     padding-top: 1em;
 
 }

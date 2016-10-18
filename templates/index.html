@@ -1,32 +1,38 @@
 <html>
-    <link href="/css/style.css" rel="stylesheet">
-    <h1>Ghess Index</h1>
-    <a href=/new/black >New Game <b>Computer Vs Human</b></a><br>
-    <a href=/new/white >New Game <b>Human Vs Computer</b></a><br>
-    <hr>
-    <table>
-	<tr>
-	    <td>
-		<h2>Existing Games Against AI</h2>
-		<ul>
-		{{ range $key, $value := . }}
-		<li><strong><a href="view/{{ $key }}">{{ $key }}</a></strong>:
-		    <br>{{ $value }}</li>
-		    {{ end }}
-                </ul>
-	    </td>
-	    <td>
-		<h2>Existing Games Against AI</h2>
-		<ul>
-		    {{ range $key, $value := . }}
-		    <li><strong><a href="view/{{ $key }}">{{ $key }}</a></strong>:
-			<br>{{ $value }}</li>
-			{{ end }}
-                </ul>
-	    </td>
-	</tr>
-    </table>
 
+    <link rel="stylesheet" href="/css/normalize.css">
+    <link rel="stylesheet" href="/css/skeleton.css">    
+    <link href="/css/style.css" rel="stylesheet">
+
+
+    <div class="container">
+	<div class="row" style="margin-top:2em">
+	    <h1>Ghess Index</h1>
+	    <a href=/new/black >New Game <b>Computer Vs Human</b></a><br>
+	    <a href=/new/white >New Game <b>Human Vs Computer</b></a><br>
+	    <a href=/newchallenge >New Game <b>Human Vs Human</b></a><br>    
+	    <hr>
+	</div>
+	<div class="row">
+	    <div class="one-half column">
+		<h2>AI Games</h2>
+		    {{ range $key, $value := .Ai }}
+		    <br>Created <strong><a href="view/{{ $key }}">{{ $key }}</a></strong><br>
+		    <br><div style="font-family:mono;font-size:10px">{{ $value }}</div>
+		    <br>
+		    {{ end }}
+	    </div>
+	    <div class="one-half column" >
+		<h2>H vs H Games</h2>
+		    {{ range $key, $value := .Vs }}
+		<br>Created <strong><a href="challenge/{{ $key }}">{{ $key }}</a></strong><br>
+		<br><div style="font-family:mono;font-size:10px">{{ $value }}</div>
+		<br>
+			{{ end }}
+
+	    </div>	    
+	</div>
+    </div>
     <br><br><br>
     <a href="https://github.com/polypmer/go-chess">Source Code</a> | <a href="/about" >About</a>
 </html>
