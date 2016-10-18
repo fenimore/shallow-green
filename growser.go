@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/boltdb/bolt"
 )
@@ -65,8 +66,8 @@ func main() {
 	router := NewRouter()
 	//http.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("static/img"))))
 	fmt.Println("Serving Chess on :" + *portFlag)
-	//	err = http.ListenAndServe(":"+os.Getenv("PORT"), router) //HEROKU
-	err = http.ListenAndServe(":"+*portFlag, router)
+	err = http.ListenAndServe(":"+os.Getenv("PORT"), router) //HEROKU
+	//err = http.ListenAndServe(":"+*portFlag, router)
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -14,6 +14,11 @@
 			"Rev": "757bef944d0f21880861c2dd9c871ca543023cba"
 		},
 		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Comment": "v1.0.0-20-ga69d25b",
+			"Rev": "a69d25be2fe2923a97c2af6849b2f52426f68fc0"
+		},
+		{
 			"ImportPath": "github.com/polypmer/ghess",
 			"Rev": "c255b4d6996bec301663baa742edec9550092cc4"
 		},
