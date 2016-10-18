@@ -1,12 +1,24 @@
 <html>
     <link href="/css/style.css" rel="stylesheet">
+    <body class="content" >
     <h1>About Ghess</h1>
     <a href=/ >Return</a>
     <hr>
-	<h2>Minimax</h2>
+    <h2>The Site</h2>
+    <ul>
+	<li>This site is run with <i>Go</i>, no framework. (Unfortunately there isn't a Chess programming language).</li>
+	<li>The Human versus Human client doesn't work on Heroku. It is a websockets powered client and is currently supporting only one game at a time.</li>
+	<li>The database is a key-value store BoltDB, which is a lightweight Go database.</li>
+	<li>The AI games are implemented with AJAX, so if the move timesout, one must refresh the page.</li>
+	<li>The underlying chess engine is likewise written by Fenimore, it's likewise in Go, and it's likewise got some bugs left in it.</li>
+    </ul>
+    <h2>Minimax</h2>
 	<ul>
-	    <li>Three ply depth.</li>
+	    <li>Implements alpha beta pruning.</li>
+	    <li>A fair bit slower on heroku.</li>
+	    <li>Looks three ply depth.</li>
 	</ul>
     <br><br><br><hr>
     <a href="https://github.com/polypmer/go-chess">Source Code GPLv3</a>
+    </body>
 </html>
