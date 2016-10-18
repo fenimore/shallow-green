@@ -33,8 +33,21 @@ func main() {
 	defer blt.Close()
 	db = blt
 
+	// Bucket for AI games
 	err = db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte("games"))
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// bucket for Websocket games
+	err = db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte("challenges"))
 		if err != nil {
 			return err
 		}

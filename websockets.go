@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/boltdb/bolt"
 	"github.com/gorilla/websocket"
 	"github.com/polypmer/ghess"
 )
@@ -221,8 +222,8 @@ func (c *Client) writePump(g ghess.Board) {
 				j, _ := json.Marshal(mv)
 				// Update the DB
 				err := db.Update(func(tx *bolt.Tx) error {
-					bucket := tx.Bucket([]byte("games"))
-					err = bucket.Put([]byte(msg.id), []byte(fen))
+					bucket := tx.Bucket([]byte("challenges"))
+					err = bucket.Put([]byte(msg.Id), []byte(fen))
 					if err != nil {
 						return err
 					}

@@ -30,10 +30,6 @@ func NewRouter() *mux.Router {
 			Name(route.Name).
 			Handler(handler)
 	}
-	//assets := http.StripPrefix("/", http.FileServer(http.Dir("./static/")))
-	//router.Handle("/", assets)
-	//fmt.Println(hub)
-	//router.Methods("GET").Name("Websocket").Handler(hub.WebSocket).Path("/ws/{id}")
 	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./static/"))))
 	return router
 }

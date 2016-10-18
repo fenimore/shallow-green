@@ -217,7 +217,7 @@ func NewChallenge(w http.ResponseWriter,
 	key := []byte(time.Now().Format("15:04:05"))
 	// Add to Database
 	err := db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte("games"))
+		bucket, err := tx.CreateBucketIfNotExists([]byte("challenges"))
 		if err != nil {
 			return err
 		}
@@ -246,7 +246,7 @@ func ViewChallenge(w http.ResponseWriter,
 	}
 	// Get From Database
 	err = db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte("games"))
+		bucket := tx.Bucket([]byte("challenges"))
 		if bucket == nil {
 			return errors.New("No bucket")
 		}
@@ -267,7 +267,6 @@ func WebSocket(w http.ResponseWriter,
 	r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-	fmt.Println("Web Socket?", hub)
 	serveWs(id, w, r)
 }
 
@@ -278,17 +277,13 @@ func serveWs(id string, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	fmt.Println("Web Socket>>>", hub)
 	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
-	fmt.Println(client)
-	fmt.Println(client.hub)
-	fmt.Println(client.hub.register)
 	client.hub.register <- client
 
 	var pos string
 	// Get game from DB
 	err = db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte("games"))
+		bucket := tx.Bucket([]byte("challenges"))
 		if bucket == nil {
 			return errors.New("No bucket")
 		}
