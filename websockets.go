@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -103,6 +104,7 @@ type inCome struct {
 	Origin      string `json:"origin"`
 	Destination string `json:"destination"`
 	Message     string `json:"message"`
+	Id          string `json:"id"`
 }
 
 // outGo struct sends data back to
@@ -186,7 +188,6 @@ func (c *Client) writePump(g ghess.Board) {
 			// read json from message
 			msg := inCome{}
 			json.Unmarshal([]byte(message), &msg)
-
 			switch msg.Type {
 			case "move":
 				mv := &outGo{}
@@ -216,7 +217,21 @@ func (c *Client) writePump(g ghess.Board) {
 					}
 				}
 				feedback = ""
+				// Marshal into json response
 				j, _ := json.Marshal(mv)
+				// Update the DB
+				err := db.Update(func(tx *bolt.Tx) error {
+					bucket := tx.Bucket([]byte("games"))
+					err = bucket.Put([]byte(msg.id), []byte(fen))
+					if err != nil {
+						return err
+					}
+					return nil
+				})
+				if err != nil {
+					fmt.Println(err)
+				}
+				// Write Message to Clien
 				w.Write([]byte(j))
 			case "message":
 				chat := &outGo{

@@ -267,18 +267,19 @@ func WebSocket(w http.ResponseWriter,
 	r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-	serveWs(hub, id, w, r)
+	fmt.Println("Web Socket?", hub)
+	serveWs(id, w, r)
 }
 
 // serveWs handles websocket requests from the peer.
-func serveWs(h *Hub, id string, w http.ResponseWriter, r *http.Request) {
+func serveWs(id string, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	fmt.Println(h)
-	client := &Client{hub: h, conn: conn, send: make(chan []byte, 256)}
+	fmt.Println("Web Socket>>>", hub)
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
 	fmt.Println(client)
 	fmt.Println(client.hub)
 	fmt.Println(client.hub.register)

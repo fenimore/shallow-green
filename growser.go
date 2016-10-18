@@ -18,6 +18,7 @@ import (
 var games = []byte("games")
 
 var db *bolt.DB
+
 var hub *Hub
 
 // Open Bolddb connection
@@ -44,8 +45,7 @@ func main() {
 	}
 
 	// Launch websocket hub
-	hub := newHub()
-	fmt.Println(hub)
+	hub = newHub()
 	go hub.run()
 
 	// connection

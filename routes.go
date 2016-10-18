@@ -32,6 +32,8 @@ func NewRouter() *mux.Router {
 	}
 	//assets := http.StripPrefix("/", http.FileServer(http.Dir("./static/")))
 	//router.Handle("/", assets)
+	//fmt.Println(hub)
+	//router.Methods("GET").Name("Websocket").Handler(hub.WebSocket).Path("/ws/{id}")
 	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./static/"))))
 	return router
 }
@@ -75,8 +77,8 @@ var routes = Routes{
 		NewChallenge,
 	},
 	Route{
-		"WebSocket",
-		"GET", // I dunno
+		"WebSockets",
+		"GET",
 		"/ws/{id}",
 		WebSocket,
 	},
