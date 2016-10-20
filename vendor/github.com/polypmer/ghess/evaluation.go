@@ -177,14 +177,15 @@ func (b *Board) Evaluate() int {
 	tension := b.Tension()
 	var material int
 
-	// Find King
-	for idx, _ := range b.board {
-		// Only look for 64 squares
-		if idx%10 == 0 || (idx+1)%10 == 0 ||
-			idx > 88 || idx < 11 {
-			continue
+	/*	// Find King
+		for idx, _ := range b.board {
+			// Only look for 64 squares
+			if idx%10 == 0 || (idx+1)%10 == 0 ||
+				idx > 88 || idx < 11 {
+				continue
+			}
 		}
-	}
+	*/
 
 	if b.Check && b.toMove == "w" {
 		score -= 200
@@ -216,13 +217,17 @@ func (b *Board) Evaluate() int {
 		if isWhitePiece {
 			if tension[idx] < 0 {
 				score -= 20
-			} else {
+				// Controlling a square doesn't mean much
+				// if it is attacked by pawns
+			} else if !b.pawnThreat(idx, isWhitePiece) {
 				score += (5 * tension[idx])
 			}
 		} else {
 			if tension[idx] > 0 {
 				score += 20
-			} else {
+				// Controlling a square doesn't mean much
+				// if it is attacked by pawns
+			} else if !b.pawnThreat(idx, !isWhitePiece) {
 				score -= (-5 * tension[idx])
 			}
 		}
@@ -268,17 +273,18 @@ func (b *Board) Evaluate() int {
 			//wtf default?
 			score += 0
 		}
-		if b.queenThreaten(idx, piece, isWhitePiece) {
+		// If threatens queen, maybe not so snazzy
+		/*if b.queenThreaten(idx, piece, isWhitePiece) {
 			if isWhitePiece {
 				score += 200
 			} else {
 				score -= 200
 			}
-		}
+		}*/
 	}
 	// Take the material advantage
 	// and multiply by two for greater weight.
-	score += (material * 2)
+	score += (material * 3)
 	return score
 
 }
@@ -353,6 +359,10 @@ func (b *Board) evalKnight(pos int, isWhite bool) int {
 	if b.pawnThreat(pos, isWhite) {
 		score -= 30 // attacked by opponent
 	}
+	// is on edge, yuck
+	if (pos-1)%10 == 0 || (pos+2)%10 == 0 {
+		score -= 20
+	}
 	// The score is inverted for Black
 	if isWhite {
 		if pos == 33 || pos == 36 {
@@ -360,6 +370,7 @@ func (b *Board) evalKnight(pos int, isWhite bool) int {
 		} else if pos > 48 {
 			score += 30
 		}
+		// Outpost Knigth
 		if pos > 38 && b.pawnProtect(pos, isWhite) {
 			score += 3
 		}
@@ -370,6 +381,7 @@ func (b *Board) evalKnight(pos int, isWhite bool) int {
 		} else if pos < 58 {
 			score -= 30
 		}
+		// Outpost Knigth
 		if pos < 68 && b.pawnProtect(pos, isWhite) {
 			score -= 3
 		}
@@ -391,11 +403,15 @@ func (b *Board) evalBishop(pos int, isWhite bool) int {
 	if isWhite {
 		if pos == 46 || pos == 43 || pos == 22 || pos == 27 {
 			score += 20
+		} else if pos == 61 || pos == 68 {
+			score -= 20
 		}
 		// check if checks ?
 	} else {
 		score = -score
 		if pos == 56 || pos == 53 || pos == 72 || pos == 77 {
+			score -= 20
+		} else if pos == 31 || pos == 38 {
 			score += 20
 		}
 	}
@@ -430,7 +446,7 @@ func (b *Board) evalRook(pos int, isWhite bool) int {
 // evalQueen evaluates the queen position.
 func (b *Board) evalQueen(pos int, isWhite bool) int {
 	var score int
-	score += 90
+	score += 150 // I up the value because queens are worth taking..
 	if b.pawnThreat(pos, isWhite) {
 		score -= 200 // Because this is real dumb
 	}
@@ -444,13 +460,7 @@ func (b *Board) evalQueen(pos int, isWhite bool) int {
 func (b *Board) evalKing(pos int, isWhite bool) int {
 	var score int
 	score += 100
-	if b.isInCheck(pos) {
-		score -= 50
-	}
-	if !isWhite {
-		score = -score
-	}
-
+	// TODO check if castle
 	return score
 }
 
