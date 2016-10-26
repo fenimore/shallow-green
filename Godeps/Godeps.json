@@ -20,7 +20,7 @@
 		},
 		{
 			"ImportPath": "github.com/polypmer/ghess",
-			"Rev": "48ef98907693cd72da4cf43e95efc1ae41e44e56"
+			"Rev": "326138e0af2d49e084bc9e09a566ff8f58027bf2"
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",
