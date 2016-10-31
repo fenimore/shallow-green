@@ -173,14 +173,17 @@ func (b *Board) queenThreaten(pos int, piece byte, isWhite bool) bool {
 
 // TODO: implement, pawnThreatensPiece
 
+// See chess programming wiki:
+// http://chessprogramming.wikispaces.com/Simplified+evaluation+function
+
 // Evaluate returns score based on position.
 // When evaluating individual pieces, the boolean to pass
 // in does not mean WHOSE turn it is but rather who owns the piece.
 func (b *Board) Evaluate() int {
 	// For position, if piece,
 	var score int
-	tension := b.Tension()
-	var material int
+	//tension := b.Tension()
+	//var material int
 
 	/*	// Find King
 		for idx, _ := range b.board {
@@ -192,17 +195,17 @@ func (b *Board) Evaluate() int {
 		}
 	*/
 
-	if b.Check && b.toMove == "w" {
-		score -= 200
-	} else if b.Check && b.toMove == "b" {
-		score += 200
-	}
+	//if b.Check && b.toMove == "w" {
+	//score -= 200
+	//} else if b.Check && b.toMove == "b" {
+	//		score += 200
+	//	}
 
 	if b.Checkmate {
 		if b.score == "0-1" {
-			score -= 9000
+			score -= 90000
 		} else if b.score == "1-0" {
-			score += 9000
+			score += 90000
 		}
 	}
 
@@ -216,64 +219,66 @@ func (b *Board) Evaluate() int {
 		}
 		isWhitePiece := b.isUpper(idx)
 		piece := []byte(bytes.ToUpper(b.board[idx : idx+1]))[0]
+		if isWhitePiece {
+			score += matMap[piece]
+		} else {
+			score -= matMap[piece]
+		}
 		// Tensions values are negative if the majority of attackers
 		// are black (etc). So if a piece moves to a 'controlled' square
 		// I'm giving 5 times the over protection.
-		if isWhitePiece {
-			if tension[idx] < 1 {
-				score -= 20
-				// Controlling a square doesn't mean much
-				// if it is attacked by pawns
-			} else if !b.pawnThreat(idx, isWhitePiece) {
-				score += (3 * tension[idx])
-			}
-		} else {
-			if tension[idx] > -1 {
-				score += 20
-				// Controlling a square doesn't mean much
-				// if it is attacked by pawns
-			} else if !b.pawnThreat(idx, !isWhitePiece) {
-				score -= (-3 * tension[idx])
-			}
-		}
+		/*
+			if isWhitePiece {
+				if tension[idx] < 1 {
+					score -= 20
+					// Controlling a square doesn't mean much
+					// if it is attacked by pawns
+				} else if !b.pawnThreat(idx, isWhitePiece) {
+					score += (3 * tension[idx])
+				}
+			} else {
+				if tension[idx] > -1 {
+					score += 20
+					// Controlling a square doesn't mean much
+					// if it is attacked by pawns
+				} else if !b.pawnThreat(idx, !isWhitePiece) {
+					score -= (-3 * tension[idx])
+				}
+			}*/
 		switch piece {
 		case 'P':
-			score += b.evalPawn(idx, isWhitePiece)
 			if isWhitePiece {
-				material += 10
+				score += whitePawnMap[idx]
 			} else {
-				material -= 10
+				score -= blackPawnMap[idx]
 			}
+			//score += b.evalPawn(idx, isWhitePiece)
 		case 'N':
-			score += b.evalKnight(idx, isWhitePiece)
 			if isWhitePiece {
-				material += 30
+				score += whiteKnightMap[idx]
 			} else {
-				material -= 30
+				score -= blackKnightMap[idx]
 			}
+			//score += b.evalKnight(idx, isWhitePiece)
 		case 'B':
-			score += b.evalBishop(idx, isWhitePiece)
 			if isWhitePiece {
-				material += 30
+				score += whiteBishopMap[idx]
 			} else {
-				material -= 30
+				score -= blackBishopMap[idx]
 			}
+			//score += b.evalBishop(idx, isWhitePiece)
 		case 'R':
-			score += b.evalRook(idx, isWhitePiece)
 			if isWhitePiece {
-				material += 50
+				score += whiteRookMap[idx]
 			} else {
-				material -= 50
+				score -= blackRookMap[idx]
 			}
+			//score += b.evalRook(idx, isWhitePiece)
+
 		case 'Q':
-			score += b.evalQueen(idx, isWhitePiece)
-			if isWhitePiece {
-				material += 100
-			} else {
-				material -= 100
-			}
+			//score += b.evalQueen(idx, isWhitePiece)
 		case 'K':
-			score += b.evalKing(idx, isWhitePiece)
+			//score += b.evalKing(idx, isWhitePiece)
 		default:
 			//wtf default?
 			score += 0
@@ -289,7 +294,6 @@ func (b *Board) Evaluate() int {
 	}
 	// Take the material advantage
 	// and multiply by two for greater weight.
-	score += (material * 3)
 	return score
 
 }

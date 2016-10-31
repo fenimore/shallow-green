@@ -67,7 +67,7 @@ func main() {
 
 	fmt.Println("Serving Chess on :" + *portFlag)
 	err = http.ListenAndServe(":"+os.Getenv("PORT"), router) // HEROKU
-	err = http.ListenAndServe(":"+*portFlag, router)
+	//err = http.ListenAndServe(":"+*portFlag, router)
 	if err != nil {
 		fmt.Println(err)
 	}
