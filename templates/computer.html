@@ -54,21 +54,22 @@
 
     </td>
     <td>
-        <div id="feedback"></div>
         <div id="output" ></div>
         <img id="loading" style="visibility:hidden;" src="/img/loading.gif" />
     </td>
       </tr>
   </table>
-
+  <div id="fen"></div>
   <script>
    // TODO: Highlight Last move:
    // http://chessboardjs.com/examples#5004
    var feedback = document.getElementById("output");
+   var fenString = document.getElementById("fen");
    var loading = document.getElementById("loading");
    var draggable = true;
    var id = {{ .Id }};
    var pos = {{ .Position }};
+   feedback.innerHTML = "<strong>"+pos+"</strong>";
 
 
    // Only drag when the ajax isn't thinking
@@ -92,7 +93,8 @@
          console.log(data.message);
          console.log(data.position);
          board.position(data.position);
-         // Color error or check message
+         feedback.innerHTML = "<strong>"+data.position+"</strong>";
+           // Color error or check message
            if (data.error) {
                feedback.style.backgroundColor = "#e7f3fe";//"
                feedback.style.borderLeft = "6px solid #2196f3"
@@ -103,7 +105,7 @@
                }
 
          loading.style.visibility = "hidden";
-         feedback.innerHTML = "<b>"+data.message+"</b>";
+           feedback.innerHTML = "<b>"+data.message+"</b>";
          // Highlight last move
          var hl = document.getElementsByClassName("highlight");
          if (hl[0] != undefined) {
