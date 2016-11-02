@@ -174,13 +174,13 @@ func PlayGame(w http.ResponseWriter,
 	if err != nil {
 		mv = &Move{
 			Position: game.Position(),
-			Message:  "> That's not a Valid Move:<br><br><i>[" + err.Error() + "]</i>",
+			Message:  "> That's not a Valid Move:<br><br><i>" + err.Error() + "</i>",
 			GameId:   id,
 			Error:    true,
 		}
 	} else {
 		if game.Checkmate {
-			msg := "> I've been Checkmated! Good game :<"
+			msg := "> I've been Checkmated! Good game"
 			mv = &Move{
 				Position:  game.Position(),
 				Message:   msg,
@@ -194,13 +194,13 @@ func PlayGame(w http.ResponseWriter,
 				fmt.Println("Minimax broken")
 			}
 			game.Move(state.Init[0], state.Init[1])
-			msg := fmt.Sprintf("> Your Turn ;) <br><br><i>my move took %s</i>",
+			msg := fmt.Sprintf("> Your Turn, <br><br><i>my move took %s</i>",
 				time.Since(now))
 			if game.Checkmate {
 				msg = "> Game Over, Checkmate >:D"
 
 			} else if game.Check {
-				msg = fmt.Sprintf("> Check! >:)<br><br> My move took %s", time.Since(now))
+				msg = fmt.Sprintf("> Check! >:D<br><br> My move took %s", time.Since(now))
 			}
 			mv = &Move{
 				Position: game.Position(),

@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	//"os" // HEROKU
+	"os" // HEROKU
 
 	"github.com/boltdb/bolt"
 )
@@ -66,7 +66,7 @@ func main() {
 	router := NewRouter()
 
 	fmt.Println("Serving Chess on :" + *portFlag)
-	//err = http.ListenAndServe(":"+os.Getenv("PORT"), router) // HEROKU
+	err = http.ListenAndServe(":"+os.Getenv("PORT"), router) // HEROKU
 	err = http.ListenAndServe(":"+*portFlag, router)
 	if err != nil {
 		fmt.Println(err)
