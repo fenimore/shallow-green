@@ -17,6 +17,24 @@
        -moz-box-shadow: inset 0 0 3px 3px green;
        box-shadow: inset 0 0 3px 3px green;
    }
+   .checkmate {
+       -webkit-box-shadow: inset 0 0 3px 3px black;
+       -moz-box-shadow: inset 0 0 3px 3px black;
+       box-shadow: inset 0 0 3px 3px black;
+   }
+
+   .check {
+       -webkit-box-shadow: inset 0 0 3px 3px red;
+       -moz-box-shadow: inset 0 0 3px 3px red;
+       box-shadow: inset 0 0 3px 3px red;
+   }
+
+   #output {
+       padding: 10px;
+       padding-left: 20px;
+       background-color: #ffdddd;
+       border-left: 6px solid #f44336;
+   }
   </style>
     </head>
     <body class="content">
@@ -37,12 +55,12 @@
 
     </td>
     <td>
+        <div id="feedback"></div>
+        <div id="output" ></div>
         <img id="loading" style="visibility:hidden;" src="/img/loading.gif" />
     </td>
       </tr>
   </table>
-  <div id="feedback"></div>
-  <div id="output" ></div>
 
   <script>
    // TODO: Highlight Last move:
@@ -75,6 +93,16 @@
          console.log(data.message);
          console.log(data.position);
          board.position(data.position);
+         // Color error or check message
+           if (data.error) {
+               feedback.style.backgroundColor = "#e7f3fe";//"
+               feedback.style.borderLeft = "6px solid #2196f3"
+           }
+           if (data.check) {
+               feedback.style.backgroundColor = "#ffdddd";
+               feedback.style.borderLeft = "6px solid #f44336";
+               }
+
          loading.style.visibility = "hidden";
          feedback.innerHTML = "<b>"+data.message+"</b>";
          // Highlight last move
@@ -88,15 +116,21 @@
          sq[0].className += " highlight";
            //orig[0].className += " highlight";
 
+
+
        }
      }
        if (source != target && target != "offboard") {
-           console.log(target);
            x.open("POST", "/play/"+ id +"/"+source+"/"+target, true);
+
            feedback.innerHTML = "<b>> Ok, I'm Thinking . . .</b>";
+           feedback.style.backgroundColor = "white";
+           feedback.style.borderLeft = "none";
+           //                     background-color: #ffdddd;
+//           border-left: 6px solid #f44336;
            loading.style.visibility = "visible";
            x.timeout = 120000;
-           x.ontimeout = function () { alert("Our Connection timed out! (sorry I'm taking so long) Please  > Refresh the Page <"); }
+           x.ontimeout = function () { alert("Ghess: Our Connection timed out! Sorry I'm taking so long :( Please Refresh the Page"); }
            x.send();
        } else {
            draggable = true;

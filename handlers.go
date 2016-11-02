@@ -130,11 +130,14 @@ func ViewGame(w http.ResponseWriter,
 
 // Move is what the browser needs to make calls etc
 type Move struct {
-	Position string `json:"position"`
-	Message  string `json:"message"`
-	LastMove string `json:"target"`
-	LastOrig string `json:"origin"`
-	GameId   string `json:"id"`
+	Position  string `json:"position"`
+	Message   string `json:"message"`
+	LastMove  string `json:"target"`
+	LastOrig  string `json:"origin"`
+	GameId    string `json:"id"`
+	Check     bool   `json:"check"`
+	Checkmate bool   `json:"checkmate"`
+	Error     bool   `json:"error"`
 }
 
 // AJAX call to make move
@@ -171,30 +174,33 @@ func PlayGame(w http.ResponseWriter,
 	if err != nil {
 		mv = &Move{
 			Position: game.Position(),
-			Message:  "> That's not a Valid Move!",
+			Message:  "> That's not a Valid Move:<br><br><i>[" + err.Error() + "]</i>",
 			GameId:   id,
+			Error:    true,
 		}
 	} else {
 		if game.Checkmate {
-			msg := "> I've been Checkmated!"
+			msg := "> I've been Checkmated! Good game :<"
 			mv = &Move{
-				Position: game.Position(),
-				Message:  msg,
-				GameId:   id,
+				Position:  game.Position(),
+				Message:   msg,
+				GameId:    id,
+				Checkmate: true,
 			}
 		} else {
 			now := time.Now()
 			state, err := ghess.MiniMaxPruning(0, 3, ghess.GetState(&game))
 			if err != nil {
-				fmt.Println("> Minimax broken")
+				fmt.Println("Minimax broken")
 			}
 			game.Move(state.Init[0], state.Init[1])
-			msg := fmt.Sprintf("> Your Move, <i>my move took %s</i>",
+			msg := fmt.Sprintf("> Your Turn ;) <br><br><i>my move took %s</i>",
 				time.Since(now))
 			if game.Checkmate {
-				msg = "> Game Over, Checkmate"
+				msg = "> Game Over, Checkmate >:D"
+
 			} else if game.Check {
-				msg = fmt.Sprintf("> Check! My move took %s", time.Since(now))
+				msg = fmt.Sprintf("> Check! >:)<br><br> My move took %s", time.Since(now))
 			}
 			mv = &Move{
 				Position: game.Position(),
@@ -202,6 +208,7 @@ func PlayGame(w http.ResponseWriter,
 				LastMove: game.PieceMap[state.Init[1]],
 				LastOrig: game.PieceMap[state.Init[0]],
 				GameId:   id,
+				Check:    game.Check,
 			}
 
 		}
