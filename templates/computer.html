@@ -78,7 +78,8 @@
          //orig[0].className += " highlight";
        }
      }
-       if (source != target) {
+       if (source != target && target != "offboard") {
+           console.log(target);
            x.open("POST", "/play/"+ id +"/"+source+"/"+target, true);
            feedback.innerHTML = "<b>> Ok, I'm Thinking . . .</b>";
            loading.style.visibility = "visible";
