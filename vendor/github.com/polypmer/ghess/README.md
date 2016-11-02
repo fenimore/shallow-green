@@ -16,7 +16,7 @@ A Golang chess engine and user interfaces
     2: |♟||♟||♟|| ||░||♟||♟||♟|
     1: |♜||♞||♝||♛||♚||♝|| ||♜|
        :a::b::c::d::e::f::g::h:
-    Black to move: 
+    Black to move:
 
 
 # Instructions
@@ -37,7 +37,7 @@ A Golang chess engine and user interfaces
 - To evaluate a board position, with positive numbers as a White advantage and negative as Black advantage:
 
     `> /eval`
-	
+
 
 # Basic Features and Functionality
 - *Most* rules are implemented:
@@ -100,7 +100,7 @@ The chess engine works with a 120 (10x12) bitmap `[]byte` slice, stored in the `
 
 ----
 
-## TODO General 
+## TODO General
 
 1. More tests.
 4. Export `Board` fields.
@@ -124,7 +124,7 @@ The chess engine works with a 120 (10x12) bitmap `[]byte` slice, stored in the `
   * Save game history to board (not automatic)?
   * Save as two coordinates, with piece specifier
 
----- 
+----
 
 # User Interfaces
 
@@ -148,7 +148,41 @@ The chess engine works with a 120 (10x12) bitmap `[]byte` slice, stored in the `
 - A server api for playing a game and saving it to a sqlite database.
 
 
----- 
+----
+
+# Benchmarks:
+
+(These are for my testing purposes). As of Nov 1, using the suped up `SearchValid()`, Minimax Benchmarks look like this:
+
+
+    BenchmarkSearchValid-4                    50      25884559 ns/op
+    BenchmarkSearchValidSlow-4                50      27821677 ns/op
+    BenchmarkMidGamePruningDepth2-4           10     138513378 ns/op
+    BenchmarkOpeningPruningDepth2-4           20      94688395 ns/op
+    BenchmarkOpeningPruningDepth3-4            1	1441998152 ns/op
+    BenchmarkMidGamePruningDepth3-4            1	2177541792 ns/op
+    BenchmarkOpeningPruningDepth4-4            1	16566151366 ns/op
+    BenchmarkMidGamePruningDepth4-4            1	16079072907 ns/op
+
+
+After I change the []byte slice board to a [120]byte array, and don't copy it:
+
+    BenchmarkSearchValid-4                       100      22877600 ns/op
+    BenchmarkSearchValidSlow-4                    50      29033893 ns/op
+    BenchmarkMidGamePruningDepth2-4               10     136505438 ns/op
+    BenchmarkOpeningPruningDepth2-4               20      77758483 ns/op
+    BenchmarkOpeningPruningDepth3-4                1	1257017288 ns/op
+    BenchmarkMidGamePruningDepth3-4                1	2254520731 ns/op
+    BenchmarkMidGameTwoPruningDepth3-4        300000          6268 ns/op
+    BenchmarkOpeningOrderedDepth3-4                1	1341534583 ns/op
+    BenchmarkMidGameOrderedDepth3-4                1	2325314282 ns/op
+    BenchmarkMidGameTwoOrderedDepth3-4        200000          6107 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	15881901832 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	18561026485 ns/op
+PASS
+
+
+
 
 ### Bugs
 
@@ -167,4 +201,3 @@ Copyright (C) 2016 Fenimore Love
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-

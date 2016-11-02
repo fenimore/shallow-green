@@ -69,7 +69,7 @@
    var draggable = true;
    var id = {{ .Id }};
    var pos = {{ .Position }};
-   feedback.innerHTML = "<strong>"+pos+"</strong>";
+   fenString.innerHTML = "<strong>"+pos+"</strong>";
 
 
    // Only drag when the ajax isn't thinking
@@ -93,7 +93,7 @@
          console.log(data.message);
          console.log(data.position);
          board.position(data.position);
-         feedback.innerHTML = "<strong>"+data.position+"</strong>";
+         fenString.innerHTML = "<strong>"+data.position+"</strong>";
            // Color error or check message
            if (data.error) {
                feedback.style.backgroundColor = "#e7f3fe";//"

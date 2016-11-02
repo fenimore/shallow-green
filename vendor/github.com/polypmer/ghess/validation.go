@@ -100,58 +100,40 @@ func (b *Board) Move(orig, dest int) error {
 	}
 	// Make sure new position doesn't put in check
 	isWhite := b.toMove == "w"
-	possible := *b                 // slices are  still pointing...
-	boardCopy := make([]byte, 120) // b.board is Pointer
-	castleCopy := make([]byte, 4)
-	copy(boardCopy, b.board)
-	copy(castleCopy, b.castle)
-	possible.board = boardCopy
-	possible.castle = castleCopy
+	possible := CopyBoard(b)
 	// Check possibilities
 	possible.updateBoard(orig, dest, val, isEmpassant, isCastle)
-	// find mover's king
-	var king int
-	for idx, val := range possible.board {
-		if isWhite && val == 'K' {
-			king = idx
-			break
-		} else if !isWhite && val == 'k' {
-			king = idx
-			break
-		}
-	}
-	isCheck := possible.isInCheck(king)
+	isCheck := possible.isOpponentInCheck()
 	if isCheck {
 		return errors.New("Cannot move into Check")
 	}
 	if isCastle {
-		copy2 := make([]byte, 120)
-		copy(copy2, b.board)
-		possible.board = copy2
+		isCheck = b.isPlayerInCheck()
+		if isCheck {
+			return errors.New("Cannot Castle in Check")
+		}
+		possible = CopyBoard(b)
 		switch {
 		case isWhite && dest < orig:
 			possible.updateBoard(orig, 13, 'K',
 				false, false) //King side, 13
-			king = 13
 		case isWhite && dest > orig:
 			possible.updateBoard(orig, 15, 'K',
 				false, false) // Queen side, 15
-			king = 15
 		case !isWhite && dest < orig:
 			possible.updateBoard(orig, 83, 'k',
 				false, false) // King 83
-			king = 83
 		case !isWhite && dest > orig:
 			possible.updateBoard(orig, 85, 'k',
 				false, false) // Queen 85
-			king = 85
 		}
 
-		isCheck = possible.isInCheck(king)
+		isCheck = possible.isOpponentInCheck()
 		if isCheck {
 			return errors.New("Cannot Castle through check")
 		}
 	}
+	// If all goes well:
 	// update real board
 	b.updateBoard(orig, dest, val, isEmpassant, isCastle)
 	// Check if it is draw// If not TODO
@@ -185,7 +167,7 @@ func (b *Board) Move(orig, dest int) error {
 	return nil
 }
 
-// updateBaord changes the byte values of board.
+// updateBoard changes the byte values of board.
 // It is useless without validation from Move().
 // This method checks, and sets, Check for Board.board.
 func (b *Board) updateBoard(orig, dest int,
@@ -213,16 +195,10 @@ func (b *Board) updateBoard(orig, dest int,
 			b.castle[2] = '-'
 		}
 	case isCastle:
-		kingSide := orig > dest
-		queenSide := orig < dest
 		switch {
-		case isWhite && kingSide:
+		case isWhite:
 			b.castle[0], b.castle[1] = '-', '-'
-		case isWhite && queenSide:
-			b.castle[0], b.castle[1] = '-', '-'
-		case !isWhite && kingSide:
-			b.castle[2], b.castle[3] = '-', '-'
-		case !isWhite && queenSide:
+		case !isWhite:
 			b.castle[2], b.castle[3] = '-', '-'
 		}
 	}
@@ -296,11 +272,26 @@ func (b *Board) updateBoard(orig, dest int,
 func (b *Board) isPlayerInCheck() bool {
 	isWhite := b.toMove == "w"
 	for idx, val := range b.board {
-		if val == 'K' && b.isUpper(idx) && isWhite {
+		if val == 'K' && isWhite {
 			//fmt.Println(b.board[idx])
 			return b.isInCheck(idx)
 		}
-		if val == 'k' && !b.isUpper(idx) && !isWhite {
+		if val == 'k' && !isWhite {
+			return b.isInCheck(idx)
+		}
+	}
+	return false
+}
+
+// isOpponentInCheck checks if move put the other in Check
+func (b *Board) isOpponentInCheck() bool {
+	isWhite := b.toMove == "w"
+	for idx, val := range b.board {
+		if val == 'K' && !isWhite {
+			//fmt.Println(b.board[idx])
+			return b.isInCheck(idx)
+		}
+		if val == 'k' && isWhite {
 			return b.isInCheck(idx)
 		}
 	}
@@ -328,43 +319,42 @@ func (b *Board) isInCheck(target int) bool {
 	// check for valid attacks
 	for _, val := range attackers {
 		p := string(bytes.ToUpper(b.board[val : val+1]))
-		switch {
-		case p == "P":
+		switch p {
+		case "P":
 			e := b.validPawn(val, target)
 			if e == nil {
 				return true
 			}
-		case p == "N":
+		case "N":
 			e := b.validKnight(val, target)
 			if e == nil {
 				//fmt.Println("Knight check")
 				return true
 			}
-		case p == "B":
+		case "B":
 			e := b.validBishop(val, target)
 			if e == nil {
 				return true
 			}
-		case p == "R":
+		case "R":
 			e := b.validRook(val, target)
 			if e == nil {
 				//fmt.Println("Rook check")
 				return true
 			}
-		case p == "Q":
+		case "Q":
 			e := b.validQueen(val, target)
 			if e == nil {
 				return true
 			}
-		case p == "K":
+		case "K":
 			e := b.validKing(val, target, false)
 			if e == nil {
 				return true
 			}
 		}
 	}
-	// if nothing was valid, return false
-	return false
+	return false // Not in Check
 }
 
 // basicValidation assures basic chess rules:
