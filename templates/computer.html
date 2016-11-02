@@ -49,17 +49,28 @@
    // http://chessboardjs.com/examples#5004
    var feedback = document.getElementById("output");
    var loading = document.getElementById("loading");
+   var draggable = true;
    var id = {{ .Id }};
    var pos = {{ .Position }};
 
+
+   // Only drag when the ajax isn't thinking
+   var onDragStart = function(source, piece, position, orientation) {
+       if (!draggable) {
+           return false;
+       }
+   };
    // This onDrop function has other param which I don't use
    var parseStand = function(source, target) {
+       draggable =false;
 //       b = document.getElementById("board");
 //       b.draggable = true;
 //       console.log(b.draggable);
      var x = new XMLHttpRequest();
      x.onreadystatechange = function() {
+
        if(x.readyState == 4) {
+         draggable = true;
          var data = JSON.parse(x.response);
          console.log(data.message);
          console.log(data.position);
@@ -75,7 +86,8 @@
          var sq = document.getElementsByClassName("square-" + data.target);
          //var orig = document.getElementsByClassName("square-" + data.origin);
          sq[0].className += " highlight";
-         //orig[0].className += " highlight";
+           //orig[0].className += " highlight";
+
        }
      }
        if (source != target && target != "offboard") {
@@ -94,8 +106,11 @@
        draggable: true,
        position: pos,
        onDrop: parseStand,
+       onDragStart: onDragStart,
    };
    var board = ChessBoard('board', config);
+   console.log(board);
+   console.log(board.drag);
    // Orient the board for whose turn according to the Fen so loaded
    var turn  = pos.split(" ")[1];
    if (turn === "b") {
