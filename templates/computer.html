@@ -1,112 +1,115 @@
 <html>
     <head>
-	<meta charset="utf-8">
-	<title>Ghess Engine</title>
-	<meta name="description" content="Ghess go-chess Chess Engine">
-	<link href="/css/style.css" rel="stylesheet">
-	<link rel="stylesheet" href="/css/chessboard-0.3.0.min.css">
-	<script src="/js/chessboard-0.3.0.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js"></script>
-	<script
-	    src="https://code.jquery.com/jquery-1.12.4.min.js"
-	    integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
-	    crossorigin="anonymous"></script>
-	<style type="text/css" >
-	 .highlight {
-	     -webkit-box-shadow: inset 0 0 3px 3px green;
-	     -moz-box-shadow: inset 0 0 3px 3px green;
-	     box-shadow: inset 0 0 3px 3px green;  
-	 }
-	</style>
+  <meta charset="utf-8">
+  <title>Ghess Engine</title>
+  <meta name="description" content="Ghess go-chess Chess Engine">
+  <link href="/css/style.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/chessboard-0.3.0.min.css">
+  <script src="/js/chessboard-0.3.0.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js"></script>
+  <script
+      src="https://code.jquery.com/jquery-1.12.4.min.js"
+      integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+      crossorigin="anonymous"></script>
+  <style type="text/css" >
+   .highlight {
+       -webkit-box-shadow: inset 0 0 3px 3px green;
+       -moz-box-shadow: inset 0 0 3px 3px green;
+       box-shadow: inset 0 0 3px 3px green;
+   }
+  </style>
     </head>
     <body class="content">
-	
-	<h1>Ghess</h1>
-	<a href="/new/white" >New Game</a>|<a href="/" >Index</a> |
-	<a href=# onclick="showHelp()" >Help</a>
-	<div id="help" >
-	    <ul>
-		<li>To Castle, move the king <i>onto</i> the target Rook</li>
-		<li>The computer's last move destination will be highlighted in green</li>
-	    </ul>
-	</div>
-	<table>
-	    <tr>
-		<td>
-		    <div id="board" style="width: 450px"></div>
 
-		</td>
-		<td>
-		    <img id="loading" style="visibility:hidden;" src="/img/loading.gif" />
-		</td>
-	    </tr>
-	</table>
-	<div id="feedback"></div>
-	<div id="output" ></div>
+  <h1>Ghess</h1>
+  <a href="/new/white" >New Game</a>|<a href="/" >Index</a> |
+  <a href=# onclick="showHelp()" >Help</a>
+  <div id="help" >
+      <ul>
+    <li>To Castle, move the king <i>onto</i> the target Rook</li>
+    <li>The computer's last move destination will be highlighted in green</li>
+      </ul>
+  </div>
+  <table>
+      <tr>
+    <td>
+        <div id="board" style="width: 450px"></div>
 
-	<script>
-	 // TODO: Highlight Last move:
-	 // http://chessboardjs.com/examples#5004
-	 var feedback = document.getElementById("output");
-	 var loading = document.getElementById("loading");
-	 var id = {{ .Id }};
-	 var pos = {{ .Position }};
-	 //var log = document.getElementById("output");
-	 // This onDrop function has other param which I don't use
-	 var parseStand = function(source, target) {
-	     //var item = document.createElement("div");
-	     var x = new XMLHttpRequest();
-	     x.onreadystatechange = function() {
-		 if(x.readyState == 4) {
-		     var data = JSON.parse(x.response);
-		     console.log(data.message);
-		     console.log(data.position);		     
-		     board.position(data.position);
-		     loading.style.visibility = "hidden";
-		     feedback.innerHTML = "<b>"+data.message+"</b>";
-		     // Highlight last move
-		     var hl = document.getElementsByClassName("highlight");
-		     if (hl[0] != undefined) {
-			 hl[0].className = hl[0].className.replace(/\bhighlight\b/g,'');
-		//	 hl[1].className = hl[1].className.replace(/\bhighlight\b/g,'');
-		     }
-		     var sq = document.getElementsByClassName("square-" + data.target);
-		     //var orig = document.getElementsByClassName("square-" + data.origin);		     
-		     sq[0].className += " highlight";
-		     //orig[0].className += " highlight";
+    </td>
+    <td>
+        <img id="loading" style="visibility:hidden;" src="/img/loading.gif" />
+    </td>
+      </tr>
+  </table>
+  <div id="feedback"></div>
+  <div id="output" ></div>
 
-		 }
-	     }
-	     x.open("POST", "/play/"+ id +"/"+source+"/"+target, true);
-	     feedback.innerHTML = "<b>> Ok, I'm Thinking . . .</b>";
-	     loading.style.visibility = "visible";
-	     x.ontimeout = function () { alert("Timed out! Refresh the Page"); }
-	     x.send();
-	 };
-	 
+  <script>
+   // TODO: Highlight Last move:
+   // http://chessboardjs.com/examples#5004
+   var feedback = document.getElementById("output");
+   var loading = document.getElementById("loading");
+   var id = {{ .Id }};
+   var pos = {{ .Position }};
 
-	 //'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-	 var config = {
-	     draggable: true,
-	     position: pos,
-	     onDrop: parseStand,
-	 };
-	 var board = ChessBoard('board', config);
-	 // Orient the board for whose turn according to the Fen so loaded
-	 var turn  = pos.split(" ")[1];
-	 if (turn === "b") {
-	     board.flip();
-	 }
+   // This onDrop function has other param which I don't use
+   var parseStand = function(source, target) {
+//       b = document.getElementById("board");
+//       b.draggable = true;
+//       console.log(b.draggable);
+     var x = new XMLHttpRequest();
+     x.onreadystatechange = function() {
+       if(x.readyState == 4) {
+         var data = JSON.parse(x.response);
+         console.log(data.message);
+         console.log(data.position);
+         board.position(data.position);
+         loading.style.visibility = "hidden";
+         feedback.innerHTML = "<b>"+data.message+"</b>";
+         // Highlight last move
+         var hl = document.getElementsByClassName("highlight");
+         if (hl[0] != undefined) {
+           hl[0].className = hl[0].className.replace(/\bhighlight\b/g,'');
+         // hl[1].className = hl[1].className.replace(/\bhighlight\b/g,'');
+         }
+         var sq = document.getElementsByClassName("square-" + data.target);
+         //var orig = document.getElementsByClassName("square-" + data.origin);
+         sq[0].className += " highlight";
+         //orig[0].className += " highlight";
+       }
+     }
+       if (source != target) {
+           x.open("POST", "/play/"+ id +"/"+source+"/"+target, true);
+           feedback.innerHTML = "<b>> Ok, I'm Thinking . . .</b>";
+           loading.style.visibility = "visible";
+           x.ontimeout = function () { alert("Timed out! Refresh the Page"); }
+           x.send();
+           }
+   };
 
-	 var help = document.getElementById("help");
-	 help.style.display = "none";
-	 function showHelp() {
-	     if (help.offsetParent === null) {
-		 help.style.display = "block";
-	     } else {
-		 help.style.display ="none";
-		 }
-	 }
-	</script>    
-    </body>  
+
+   //'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+   var config = {
+       draggable: true,
+       position: pos,
+       onDrop: parseStand,
+   };
+   var board = ChessBoard('board', config);
+   // Orient the board for whose turn according to the Fen so loaded
+   var turn  = pos.split(" ")[1];
+   if (turn === "b") {
+       board.flip();
+   }
+
+   var help = document.getElementById("help");
+   help.style.display = "none";
+   function showHelp() {
+       if (help.offsetParent === null) {
+     help.style.display = "block";
+       } else {
+     help.style.display ="none";
+     }
+   }
+  </script>
+    </body>
 </html>
