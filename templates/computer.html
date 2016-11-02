@@ -95,8 +95,11 @@
            x.open("POST", "/play/"+ id +"/"+source+"/"+target, true);
            feedback.innerHTML = "<b>> Ok, I'm Thinking . . .</b>";
            loading.style.visibility = "visible";
-           x.ontimeout = function () { alert("Timed out! Refresh the Page"); }
+           x.timeout = 120000;
+           x.ontimeout = function () { alert("Our Connection timed out! (sorry I'm taking so long) Please  > Refresh the Page <"); }
            x.send();
+       } else {
+           draggable = true;
            }
    };
 
