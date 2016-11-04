@@ -179,8 +179,49 @@ After I change the []byte slice board to a [120]byte array, and don't copy it:
     BenchmarkMidGameTwoOrderedDepth3-4        200000          6107 ns/op
     BenchmarkOpeningPruningDepth4-4                1	15881901832 ns/op
     BenchmarkMidGamePruningDepth4-4                1	18561026485 ns/op
-PASS
+    PASS
 
+Benchmarks after I figured out that I wasn't calling MiniMaxOrdered inside of MinimaxOrdered...
+
+    BenchmarkMidGamePruningDepth2-4               10     136375546 ns/op
+    BenchmarkOpeningPruningDepth2-4               20      91753078 ns/op
+    BenchmarkOpeningPruningDepth3-4                1	1322371490 ns/op
+    BenchmarkMidGamePruningDepth3-4                1	2164638763 ns/op
+    BenchmarkMidGameTwoPruningDepth3-4        300000          6137 ns/op
+    BenchmarkOpeningOrderedDepth3-4                1	1246987176 ns/op
+    BenchmarkMidGameOrderedDepth3-4                1	2455577971 ns/op
+    BenchmarkMidGameTwoOrderedDepth3-4        300000          6135 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	15661720638 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	18284754487 ns/op
+
+Giving up with PV:
+
+    BenchmarkMidGamePruningDepth2-4               10     131262359 ns/op
+    BenchmarkOpeningPruningDepth2-4               20      94373512 ns/op
+    BenchmarkOpeningPruningDepth3-4                1	1350511232 ns/op
+    BenchmarkMidGamePruningDepth3-4                1	2508213115 ns/op
+    BenchmarkMidGameTwoPruningDepth3-4        200000          6455 ns/op // Flawed
+    BenchmarkOpeningOrderedDepth3-4                1	1287404076 ns/op
+    BenchmarkMidGameOrderedDepth3-4                1	2292292483 ns/op
+    BenchmarkMidGameTwoOrderedDepth3-4        200000          7241 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	16827821614 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	15570438668 ns/op
+    PASS
+    ok      github.com/polypmer/ghess	50.129s
+
+After Using profiling
+
+    BenchmarkSearchValid-4                       100      15393451 ns/op
+    BenchmarkSearchValidSlow-4                   100      15275635 ns/op
+    BenchmarkMidGamePruningDepth2-4               20      93899457 ns/op
+    BenchmarkOpeningPruningDepth2-4               20      56920214 ns/op
+    BenchmarkOpeningPruningDepth3-4                2     784527542 ns/op
+    BenchmarkMidGamePruningDepth3-4                1	1518414649 ns/op
+    BenchmarkMidGameTwoPruningDepth3-4             3     361195704 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	10112804027 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	9730502681 ns/op
+    PASS
+    ok      github.com/polypmer/ghess	31.456s
 
 
 
