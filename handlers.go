@@ -205,8 +205,8 @@ func PlayGame(w http.ResponseWriter,
 			mv = &Move{
 				Position: game.Position(),
 				Message:  msg,
-				LastMove: game.PieceMap[state.Init[1]],
-				LastOrig: game.PieceMap[state.Init[0]],
+				LastMove: ghess.PieceMap[state.Init[1]],
+				LastOrig: ghess.PieceMap[state.Init[0]],
 				GameId:   id,
 				Check:    game.Check,
 			}
