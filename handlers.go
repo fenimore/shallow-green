@@ -12,6 +12,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
 	"github.com/polypmer/ghess"
+	"strconv"
 )
 
 type GameList struct {
@@ -96,8 +97,9 @@ func NewGame(w http.ResponseWriter,
 }
 
 type Game struct {
-	Position string
-	Id       string
+	Position   string
+	Id         string
+	Difficulty int
 }
 
 func ViewGame(w http.ResponseWriter,
@@ -123,8 +125,7 @@ func ViewGame(w http.ResponseWriter,
 	if err != nil {
 		fmt.Printf("Error %s Templates", err)
 	}
-	g := Game{Position: pos, Id: id}
-
+	g := Game{Position: pos, Id: id, Difficulty: 4}
 	t.Execute(w, g)
 }
 
@@ -148,6 +149,7 @@ func PlayGame(w http.ResponseWriter,
 	id := vars["id"]
 	orig := vars["orig"]
 	dest := vars["dest"]
+	diff, _ := strconv.Atoi(vars["diff"])
 	var pos string
 	// Get game from DB
 	err := db.View(func(tx *bolt.Tx) error {
@@ -189,7 +191,7 @@ func PlayGame(w http.ResponseWriter,
 			}
 		} else {
 			now := time.Now()
-			state, err := ghess.MiniMaxPruning(0, 3, ghess.GetState(&game))
+			state, err := ghess.MiniMaxPruning(0, diff, ghess.GetState(&game))
 			if err != nil {
 				fmt.Println("Minimax broken")
 			}

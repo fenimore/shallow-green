@@ -34,13 +34,22 @@
        padding-left: 20px;
 
    }
+   #hard {
+       font-weight: normal;
+   }
+   #easy {
+       font-weight: bold;
+   }
+
   </style>
     </head>
     <body class="content">
 
   <h1>Ghess</h1>
   <a href="/new/white" >New Game</a>|<a href="/" >Index</a> |
-  <a href=# onclick="showHelp()" >Help</a>
+  <a href=# onclick="showHelp()" >Help</a><hr><small>Difficulty</small>
+  <a href="#" id="hard" onclick="setHard()">Hard</a> |
+  <a href="#" id="easy" onclick="setEasy()">Easy (default)</a>
   <div id="help" >
       <ul>
     <li>To Castle, move the king <i>onto</i> the target Rook</li>
@@ -69,6 +78,7 @@
    var draggable = true;
    var id = {{ .Id }};
    var pos = {{ .Position }};
+   var difficulty = 3//{{ .Difficulty }}
    fenString.innerHTML = "<small>"+pos+"</small>";
 
 
@@ -125,7 +135,7 @@
        }
      }
        if (source != target && target != "offboard") {
-           x.open("POST", "/play/"+ id +"/"+source+"/"+target, true);
+           x.open("POST", "/play/"+ id +"/"+source+"/"+target+"/"+difficulty, true);
 
            feedback.innerHTML = "<b>> Ok, I'm Thinking . . .</b>";
            feedback.style.backgroundColor = "white";
@@ -167,6 +177,17 @@
      help.style.display ="none";
      }
    }
+   function setHard() {
+       difficulty = 4
+       document.getElementById("easy").style.fontWeight = "normal";
+       document.getElementById("hard").style.fontWeight = "bold";
+   }
+   function setEasy() {
+       difficulty = 3
+       document.getElementById("easy").style.fontWeight = "bold";
+       document.getElementById("hard").style.fontWeight = "normal";
+   }
+
   </script>
     </body>
 </html>

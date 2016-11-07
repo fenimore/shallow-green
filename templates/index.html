@@ -5,39 +5,40 @@
     <meta name="author" content="Fenimore Love">
 
     <link rel="stylesheet" href="/css/normalize.css">
-    <link rel="stylesheet" href="/css/skeleton.css">    
+    <link rel="stylesheet" href="/css/skeleton.css">
     <link href="/css/style.css" rel="stylesheet">
     <div class="container">
-	<div class="row" style="margin-top:2em">
+  <div class="row" style="margin-top:2em">
 
-	    <h1>Ghess Index</h1>
-	    <a href="/about"><b>About</b></a><br>
-	    <a href=/new/black >New Game <b>Computer Vs Human</b></a><br>
-	    <a href=/new/white >New Game <b>Human Vs Computer</b></a><br>
-	    <a href=/newchallenge >New Game <b>Human Vs Human</b></a><br>    
-	    <hr>
-	</div>
-	<div class="row">
-	    <div class="one-half column">
-		<h2>AI Games</h2>
-		    {{ range $key, $value := .Ai }}
-		    <br>Created <strong><a href="view/{{ $key }}">{{ $key }}</a></strong><br>
-		    <br><div style="font-family:mono;font-size:10px">{{ $value }}</div>
-		    <br>
-		    {{ end }}
-	    </div>
-	    <div class="one-half column" >
-		<h2>H vs H Games</h2>
-		    {{ range $key, $value := .Vs }}
-		<br>Created <strong><a href="challenge/{{ $key }}">{{ $key }}</a></strong><br>
-		<br><div style="font-family:mono;font-size:10px">{{ $value }}</div>
-		<br>
-			{{ end }}
+      <h1>Ghess Index</h1>
+      <h5>New Game:</h5>
+      <a class="button" href=/new/black >Computer Vs Human</a>
+      <a class="button"  href=/new/white >Human Vs Computer</a><br>
+      <hr>
+      <a class="button" href="/about"><b>About Ghess</b></a><br>
+  </div>
+  <div class="row">
+      <div class="one-half column">
+    <h3>AI Games</h3>
+        {{ range $key, $value := .Ai }}
+        <br>Created <strong><a href="view/{{ $key }}">{{ $key }}</a></strong><br>
+        <br><div style="font-family:mono;font-size:10px">{{ $value }}</div>
+        <br>
+        {{ end }}
+      </div>
+      <div class="one-half column" >
+          <h3>H vs H Games</h3>
+          <a class="button"  href=/newchallenge >Human Vs Human (Not working on Heroku)</a><br>
+        {{ range $key, $value := .Vs }}
+    <br>Created <strong><a href="challenge/{{ $key }}">{{ $key }}</a></strong><br>
+    <br><div style="font-family:mono;font-size:10px">{{ $value }}</div>
+    <br>
+      {{ end }}
 
-	    </div>
-	</div>
-	<br><br><br>
-	Fenimore Love 2016 | <a href="https://github.com/polypmer/go-chess">Source Code</a> | <a href="/about" >About</a>	
+      </div>
+  </div>
+  <br><br><br>
+  Fenimore Love 2016 | <a href="https://github.com/polypmer/go-chess">Source Code</a> | <a href="/about" >About</a>
     </div>
 
 </html>

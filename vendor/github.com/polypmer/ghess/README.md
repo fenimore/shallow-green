@@ -46,7 +46,7 @@ A Golang chess engine and user interfaces
 - PGN import-export via `Board.LoadPgn()` and `Board.PgnString()`
 - FEN import-export via `Board.LoadFen()` and `Board.Position()`
 - Command Line interface.
-- Simple AI
+- Web interface
 
 # Search and Evaluate Features
 
@@ -102,6 +102,13 @@ The chess engine works with a 120 (10x12) bitmap `[]byte` slice, stored in the `
 
 ## TODO General
 
+2. Tweak evaluation a bit
+4. Deal with Horizon Effect
+4. Invalid fen when first number is not zero
+5. Add Difficulties to AI UI
+4. Keep track of capture state to combat horizon effect
+4. Undo the ToUpper and ToLower cause that's not good
+6. Make piece map global
 1. More tests.
 4. Export `Board` fields.
 6. Change `Board` to `Game`, as that makes more sense...
@@ -129,7 +136,7 @@ The chess engine works with a 120 (10x12) bitmap `[]byte` slice, stored in the `
 # User Interfaces
 
 ## Clichess
-- A commandline chess program for debugging and watching random games.
+- A commandline chess program, it can output and parse PGN and FEN notation.
 - Type `> /help` to list options.
 
 ![clichess](http://polypmer.github.io/img/clichess.png "clichess screenshot")
@@ -138,15 +145,9 @@ The chess engine works with a 120 (10x12) bitmap `[]byte` slice, stored in the `
 ## Growser
 - A server api using `gorilla/websocket` for live network chess playing!
 - Dependency: gorilla/websocket (BSD) and Chessboard.js (MIT)
-  * TODO: Add watch random
-  * TODO: Add play AI
-  * TODO: context and game index...
-  * TODO: everything user
-- Castling is only when King steps on Rook, not like normals.
-
-## browser-sql
-- A server api for playing a game and saving it to a sqlite database.
-
+- NB. Castling is only when King steps on Rook, not like normals.
+- Games are stored with a BoltDB keystore database
+- See the repository: [Shallow-Green](https://github.com/polypmer/shallow-green)
 
 ----
 
@@ -200,10 +201,6 @@ Giving up with PV:
     BenchmarkOpeningPruningDepth2-4               20      94373512 ns/op
     BenchmarkOpeningPruningDepth3-4                1	1350511232 ns/op
     BenchmarkMidGamePruningDepth3-4                1	2508213115 ns/op
-    BenchmarkMidGameTwoPruningDepth3-4        200000          6455 ns/op // Flawed
-    BenchmarkOpeningOrderedDepth3-4                1	1287404076 ns/op
-    BenchmarkMidGameOrderedDepth3-4                1	2292292483 ns/op
-    BenchmarkMidGameTwoOrderedDepth3-4        200000          7241 ns/op
     BenchmarkOpeningPruningDepth4-4                1	16827821614 ns/op
     BenchmarkMidGamePruningDepth4-4                1	15570438668 ns/op
     PASS
@@ -223,6 +220,154 @@ After Using profiling
     PASS
     ok      github.com/polypmer/ghess	31.456s
 
+
+Benchmarks with pawn validation in Check reduced...
+
+    BenchmarkSearchValid-4                       100      15480015 ns/op
+    BenchmarkSearchValidSlow-4                   100      15150476 ns/op
+    BenchmarkMidGamePruningDepth2-4               20      91290571 ns/op
+    BenchmarkOpeningPruningDepth2-4               30      50329151 ns/op
+    BenchmarkOpeningPruningDepth3-4                2     686627412 ns/op
+    BenchmarkMidGamePruningDepth3-4                1	1249006486 ns/op
+    BenchmarkMidGameTwoPruningDepth3-4             5     342692638 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	8347604470 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	8536214158 ns/op
+    PASS
+    ok      github.com/polypmer/ghess	30.632s
+
+Benchmark After certain profiling:
+
+    BenchmarkSearchValid-4                       100      12357042 ns/op
+    BenchmarkSearchValidSlow-4                   100      14710691 ns/op
+    BenchmarkMidGamePruningDepth2-4               20      78253547 ns/op
+    BenchmarkOpeningPruningDepth2-4               30      44239677 ns/op
+    BenchmarkOpeningPruningDepth3-4                2     617343700 ns/op
+    BenchmarkMidGamePruningDepth3-4                1	1478115205 ns/op
+    BenchmarkMidGameTwoPruningDepth3-4             3     342789913 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	9527661212 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	10551483526 ns/op
+    PASS
+    ok      github.com/polypmer/ghess	30.863s
+
+Without Updating Check within the Move method
+
+    BenchmarkSearchValid-4                       100      10165640 ns/op
+    BenchmarkSearchValidSlow-4                   100      10950169 ns/op
+    BenchmarkMidGamePruningDepth2-4               20      55903070 ns/op
+    BenchmarkOpeningPruningDepth2-4               50      36001671 ns/op
+    BenchmarkOpeningPruningDepth3-4                2     500474578 ns/op
+    BenchmarkMidGamePruningDepth3-4                1	1110722333 ns/op
+    BenchmarkMidGameTwoPruningDepth3-4             5     239901689 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	6221718962 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	6580892546 ns/op
+    PASS
+    ok      github.com/polypmer/ghess	22.101s
+
+Before New Check Method:
+
+    BenchmarkSearchValid-4                      5000        470955 ns/op
+    BenchmarkSearchValidSlow-4                  1000       1380257 ns/op
+    BenchmarkMidGamePruningDepth2-4               50      42497511 ns/op
+    BenchmarkOpeningPruningDepth2-4              100      26641277 ns/op
+    BenchmarkOpeningPruningDepth3-4               10     246942839 ns/op
+    BenchmarkMidGamePruningDepth3-4                5     279948987 ns/op
+    BenchmarkMidGameTwoPruningDepth3-4            20     133189782 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	4016534087 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	3511034720 ns/op
+    PASS
+    ok      github.com/polypmer/ghess	24.323s
+
+After new check method
+
+    BenchmarkSearchValid-4                     10000        290186 ns/op
+    BenchmarkSearchValidSlow-4                 10000        305094 ns/op
+    BenchmarkMidGamePruningDepth2-4               50      21060368 ns/op
+    BenchmarkOpeningPruningDepth2-4              100      16300874 ns/op
+    BenchmarkOpeningPruningDepth3-4               10     156043108 ns/op
+    BenchmarkMidGamePruningDepth3-4               20     146742071 ns/op
+    BenchmarkMidGameTwoPruningDepth3-4            20      60358058 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	2920717586 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	2233602005 ns/op
+    PASS
+    ok      github.com/polypmer/ghess	19.966s
+
+After Clean Up Tests:
+
+    BenchmarkMidGamePruningDepth2-4              100      25309438 ns/op
+    BenchmarkOpeningPruningDepth2-4              100      17696422 ns/op
+    BenchmarkOpeningPruningDepth3-4               10     183471772 ns/op
+    BenchmarkMidGamePruningDepth3-4               10     147649582 ns/op
+    BenchmarkMidGamePruningDepth3v2-4              2     623692681 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	2224223811 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	1748469646 ns/op
+    BenchmarkMidGamePruningDepth4v2-4              1	5833172254 ns/op
+    BenchmarkOpeningPruningDepth5-4                1	25067368045 ns/op
+    BenchmarkMidGamePruningDepth5-4                1	12097247498 ns/op
+    PASS
+    ok      github.com/polypmer/ghess	56.751s
+
+
+After Checking for Checkmate in Move Function:
+
+    BenchmarkMidGamePruningDepth2-4              100      22388385 ns/op
+    BenchmarkOpeningPruningDepth2-4              100      16043151 ns/op
+    BenchmarkOpeningPruningDepth3-4                5     243147499 ns/op
+    BenchmarkMidGamePruningDepth3-4                3     480370920 ns/op
+    BenchmarkMidGamePruningDepth3v2-4              2     940100309 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	2995183075 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	2833983087 ns/op
+    BenchmarkMidGamePruningDepth4v2-4              1	11650210041 ns/op
+    BenchmarkOpeningPruningDepth5-4                1	45387620618 ns/op
+    BenchmarkMidGamePruningDepth5-4                1	41308541742 ns/op
+    PASS
+    ok      github.com/polypmer/ghess	116.066s
+
+
+With new checkCheck method:
+
+    BenchmarkMidGamePruningDepth2-4              100      22448028 ns/op
+    BenchmarkOpeningPruningDepth2-4              100      15045846 ns/op
+    BenchmarkOpeningPruningDepth3-4                5     249524429 ns/op
+    BenchmarkMidGamePruningDepth3-4                3     508006507 ns/op
+    BenchmarkMidGamePruningDepth3v2-4              2     919852959 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	2828037344 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	2467769132 ns/op
+    BenchmarkMidGamePruningDepth4v2-4              1	10528120071 ns/op
+    BenchmarkOpeningPruningDepth5-4                1	44537287486 ns/op
+    BenchmarkMidGamePruningDepth5-4                1	40094846903 ns/op
+    PASS
+    ok      github.com/polypmer/ghess	112.273s
+
+
+Removing bytes to Upper in Favor of unicode ToLower (woah big gain)
+
+    BenchmarkMidGamePruningDepth2-4              100      16925310 ns/op
+    BenchmarkOpeningPruningDepth2-4              100      12206812 ns/op
+    BenchmarkOpeningPruningDepth3-4               10     188508894 ns/op
+    BenchmarkMidGamePruningDepth3-4                3     362414598 ns/op
+    BenchmarkMidGamePruningDepth3v2-4              2     719300465 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	2205359134 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	2047525391 ns/op
+    BenchmarkMidGamePruningDepth4v2-4              1	8160272334 ns/op
+    BenchmarkOpeningPruningDepth5-4                1	35592436104 ns/op
+    BenchmarkMidGamePruningDepth5-4                1	36422738754 ns/op
+    PASS
+    ok      github.com/polypmer/ghess	93.830s
+
+Solving Mate in Three Puzzles
+
+    BenchmarkMidGamePruningDepth2-4              100      17760837 ns/op
+    BenchmarkOpeningPruningDepth2-4              100      11871520 ns/op
+    BenchmarkOpeningPruningDepth3-4               10     189677602 ns/op
+    BenchmarkMidGamePruningDepth3-4                3     423109193 ns/op
+    BenchmarkMidGamePruningDepth3v2-4              2     763345004 ns/op
+    BenchmarkOpeningPruningDepth4-4                1	2255497458 ns/op
+    BenchmarkMidGamePruningDepth4-4                1	2156571491 ns/op
+    BenchmarkMidGamePruningDepth4v2-4              1	8961648726 ns/op
+    BenchmarkOpeningPruningDepth5-4                1	37199162918 ns/op
+    BenchmarkMidGamePruningDepth5-4                1	39992108638 ns/op
+    PASS
+    ok      github.com/polypmer/ghess	100.381s
 
 
 ### Bugs

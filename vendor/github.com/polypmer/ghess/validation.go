@@ -1,8 +1,8 @@
 package ghess
 
 import (
-	"bytes"
 	"errors"
+	"unicode"
 )
 
 // Problem: 1nbq1knr/1rNpppb1/pp4pp/4N3/3P4/P6P/1PP1PPP1/R1BQKB1R w KQ-- - 0 9
@@ -23,15 +23,26 @@ func (b *Board) Move(orig, dest int) error {
 	var isEmpassant bool // refactor?
 	var isCastle bool
 	if b.toMove == "w" {
+		//b[pos] = byte(unicode.ToUpper(rune(b[pos])))
 		// check that orig is Upper
 		// and dest is Enemy or Empty
-		o = []byte(bytes.ToUpper(b.board[orig : orig+1]))[0]
-		d = []byte(bytes.ToLower(b.board[dest : dest+1]))[0]
+		// Use hash map TODO
+		//		o = ByteToUpper[b.board[orig]]
+		//		d = ByteToLower[b.board[dest]]
+		o = byte(unicode.ToUpper(rune(b.board[orig])))
+		//[]byte(bytes.ToUpper(b.board[orig : orig+1]))[0]
+		d = byte(unicode.ToLower(rune(b.board[dest])))
+		//[]byte(bytes.ToLower(b.board[dest : dest+1]))[0]
 	} else if b.toMove == "b" {
 		// check if orig is Lower
 		// and dest is Enemy or Empty
-		o = []byte(bytes.ToLower(b.board[orig : orig+1]))[0]
-		d = []byte(bytes.ToUpper(b.board[dest : dest+1]))[0]
+		//		o = ByteToLower[b.board[orig]]
+		//		d = ByteToUpper[b.board[dest]]
+		o = byte(unicode.ToLower(rune(b.board[orig])))
+		//[]byte(bytes.ToLower(b.board[orig : orig+1]))[0]
+		d = byte(unicode.ToUpper(rune(b.board[dest])))
+
+		//[]byte(bytes.ToUpper(b.board[dest : dest+1]))[0]
 	}
 	// Check for Castle
 	if orig == 14 {
@@ -45,9 +56,9 @@ func (b *Board) Move(orig, dest int) error {
 		return err
 	}
 
-	p := string(bytes.ToUpper(b.board[orig : orig+1]))
-	switch {
-	case p == "P":
+	p := b.board[orig]
+	switch p {
+	case 'p', 'P':
 		e := b.validPawn(orig, dest)
 		if e != nil {
 			return e
@@ -57,39 +68,31 @@ func (b *Board) Move(orig, dest int) error {
 			isEmpassant = true
 		}
 
-	case p == "N":
+	case 'n', 'N':
 		e := b.validKnight(orig, dest)
 		if e != nil {
 			return e
 		}
-	case p == "B":
+	case 'b', 'B':
 		e := b.validBishop(orig, dest)
 		if e != nil {
 			return e
 		}
-	case p == "R":
+	case 'R', 'r':
 		e := b.validRook(orig, dest)
 		if e != nil {
 			return e
 		}
-	case p == "Q":
+	case 'Q', 'q':
 		e := b.validQueen(orig, dest)
 		if e != nil {
 			return e
 		}
-	case p == "K": // is castle?
+	case 'k', 'K': // is castle?
 		if !isCastle {
 			e := b.validKing(orig, dest, false)
 			if e != nil {
 				return e
-			}
-			if orig == 14 || orig == 84 { // starting pos
-				switch {
-				case o == 'K':
-					b.castle[0], b.castle[1] = '-', '-'
-				case o == 'k':
-					b.castle[2], b.castle[3] = '-', '-'
-				}
 			}
 		} else {
 			e := b.validKing(orig, dest, true)
@@ -103,11 +106,13 @@ func (b *Board) Move(orig, dest int) error {
 	possible := CopyBoard(b)
 	// Check possibilities
 	possible.updateBoard(orig, dest, val, isEmpassant, isCastle)
-	isCheck := possible.isOpponentInCheck()
+	putIntoCheck, isCheck := possible.checkCheck(isWhite) // because turn updateso
+	//isCheck := possible.isOpponentInCheck()
 	if isCheck {
 		return errors.New("Cannot move into Check")
 	}
 	if isCastle {
+		// FIXME, reuse this value?
 		isCheck = b.isPlayerInCheck()
 		if isCheck {
 			return errors.New("Cannot Castle in Check")
@@ -136,34 +141,23 @@ func (b *Board) Move(orig, dest int) error {
 	// If all goes well:
 	// update real board
 	b.updateBoard(orig, dest, val, isEmpassant, isCastle)
-	// Check if it is draw// If not TODO
+
+	if putIntoCheck {
+		b.Check = true
+		_ = b.PlayerCheckMate()
+	} else {
+		b.Check = false
+	}
+
+	// Check if it is draw
 	if orig == b.history[6] && orig == b.history[3] && b.history[0] == b.history[5] {
 		// origins all match upppp... suspicious
 		if dest == b.history[7] && dest == b.history[2] && b.history[1] == b.history[4] {
 			b.score = "1/2 - 1/2"
 		}
 	}
+	// For draw?
 	b.cycleHistory(orig, dest)
-	// Look for Checkmate
-	// Check all possibl moves after a check?
-	isCheck = b.isPlayerInCheck()
-	//isCheck = b.isInCheck(king)
-	if isCheck {
-		isCheckMate := false
-		origs, _ := b.SearchValid()
-		if len(origs) < 1 {
-			isCheckMate = true
-		}
-		if isCheckMate {
-			b.Checkmate = true
-			if b.toMove == "w" {
-				b.score = "0-1"
-			} else {
-				b.score = "1-0"
-			}
-		}
-	}
-
 	return nil
 }
 
@@ -176,14 +170,14 @@ func (b *Board) updateBoard(orig, dest int,
 	var isPromotion bool
 	// Check for Promotion
 	switch {
-	case b.board[orig] == 'p' && dest < 20:
+	case val == 'p' && dest < 20:
 		isPromotion = true
-	case b.board[orig] == 'P' && dest > 80:
+	case val == 'P' && dest > 80:
 		isPromotion = true
 	}
 	// Check for castle deactivation
 	switch {
-	case b.board[orig] == 'r' || b.board[orig] == 'R':
+	case val == 'r' || val == 'R':
 		switch { // Castle
 		case orig == 18:
 			b.castle[1] = '-'
@@ -193,6 +187,15 @@ func (b *Board) updateBoard(orig, dest int,
 			b.castle[0] = '-'
 		case orig == 81:
 			b.castle[2] = '-'
+		}
+	case orig == 14 || orig == 84:
+		switch {
+		case val == 'K':
+			b.castle[0], b.castle[1] = '-', '-'
+		case val == 'k':
+			b.castle[2], b.castle[3] = '-', '-'
+		default:
+			break
 		}
 	case isCastle:
 		switch {
@@ -210,7 +213,6 @@ func (b *Board) updateBoard(orig, dest int,
 			if b.board[dest] == '.' {
 				// White offset
 				b.board[dest-10] = '.'
-
 			}
 		case orig-dest == 9 || orig-dest == 11:
 			if b.board[dest] == '.' {
@@ -258,13 +260,42 @@ func (b *Board) updateBoard(orig, dest int,
 		b.empassant = 0
 	}
 
-	// Check if move put other player in Check
+}
+
+// PlayerCheck Method checks if Current player is in Check
+// and updates score accordingly
+func (b *Board) PlayerCheck() bool {
 	isCheck := b.isPlayerInCheck()
 	if isCheck {
 		b.Check = true
 	} else {
 		b.Check = false
 	}
+
+	return isCheck
+}
+
+func (b *Board) GameOver() bool {
+	origs, _ := b.SearchValid()
+	return len(origs) < 1
+}
+
+// PlayerCheckMate checks if current player is checkmated
+// and updates score accordingly. Only call after setting
+// the Check field in Board.
+func (b *Board) PlayerCheckMate() bool {
+	origs, _ := b.SearchValid()
+	if len(origs) < 1 {
+		b.Checkmate = true
+		if b.toMove == "w" {
+			b.score = "0-1"
+			return true
+		} else {
+			b.score = "1-0"
+			return true
+		}
+	}
+	return false
 }
 
 // isPlayerInCheck, current player is in Check.
@@ -298,9 +329,67 @@ func (b *Board) isOpponentInCheck() bool {
 	return false
 }
 
+func (b *Board) checkCheck(isBlack bool) (bool, bool) {
+	// This checks who is in check. IsWhite is the inverse of
+	// the validation check. So that means that if isWhite, these
+	// black player CANNOT be in check, and if isBlack,
+	// the white player cannot be in check
+	//var moveIntoCheck bool
+	var putIntoCheck bool
+CheckLoop:
+	for idx, val := range b.board {
+		switch val {
+		case 'K': // white player
+			check := b.isInCheck(idx)
+			if isBlack && check {
+				//moveIntoCheck = true
+				return false, true
+			} else if !isBlack && check {
+				putIntoCheck = true
+			} else {
+				continue CheckLoop
+			}
+		case 'k':
+			check := b.isInCheck(idx)
+			if !isBlack && check {
+				//moveIntoCheck = true
+				return false, true
+			} else if isBlack && check {
+				putIntoCheck = true
+			} else {
+				continue CheckLoop
+			}
+		default:
+			continue CheckLoop
+		}
+	}
+	return putIntoCheck, false //moveIntoCheck
+}
+
+// TODO: Break these into functions
+func (b *Board) isInCheck(target int) bool {
+
+	isWhite := b.isUpper(target)
+
+	switch {
+	case b.checkVerticalAxis(target, isWhite):
+		return true
+	case b.checkHorizontalAsix(target, isWhite):
+		return true
+	case b.checkA1Diagonal(target, isWhite):
+		return true
+	case b.checkH1Diagonal(target, isWhite):
+		return true
+	case b.checkProximity(target, isWhite):
+		return true
+	default:
+		return false
+	}
+}
+
 // isInCheck checks if target King is in Check.
 // Automaticaly checks for turn by the target King.
-func (b *Board) isInCheck(target int) bool {
+func (b *Board) isInCheckDep(target int) bool {
 	isWhite := b.isUpper(target)
 	//k := b.board[target]
 
@@ -310,13 +399,23 @@ func (b *Board) isInCheck(target int) bool {
 	for idx := range b.board {
 		whitePiece := b.isUpper(idx)
 		if isWhite && !whitePiece {
+			if b.board[idx] == 'p' {
+				if (idx - target) > 11 {
+					continue
+				}
+			}
 			attackers = append(attackers, idx)
 		} else if !isWhite && whitePiece { // black
+			if b.board[idx] == 'P' {
+				if (target - idx) > 11 {
+					continue
+				}
+			}
 			attackers = append(attackers, idx)
 		}
 	}
-	//fmt.Println("white ", isWhite, "attackers ", attackers, "king", k)
-	// check for valid attacks
+	// Check for Attackers
+	// and only add the oproprate ones.
 	for _, val := range attackers {
 		p := b.board[val]
 		switch p {
@@ -664,5 +763,252 @@ func (b *Board) validKing(orig int, dest int, castle bool) error {
 	} else {
 		return errors.New("Illegal King Move")
 	}
-	return nil
+	//return nil
+}
+
+// Check if King is in Check on Horizontal axis
+func (b *Board) checkHorizontalAsix(target int, isWhite bool) bool {
+RightLoop:
+	for i := target + 1; !((i+1)%10 == 0); i = i + 1 {
+		switch b.board[i] {
+		case 'r', 'q':
+			if isWhite {
+				return true
+			}
+			break RightLoop
+		case 'R', 'Q':
+			if !isWhite {
+				return true
+			}
+			break RightLoop
+		case '.':
+			continue RightLoop
+		default:
+			break RightLoop
+		}
+	}
+LeftLoop:
+	for i := target - 1; !(i%10 == 0); i = i - 1 {
+		switch b.board[i] {
+		case 'r', 'q':
+			if isWhite {
+				return true
+			}
+			break LeftLoop
+		case 'R', 'Q':
+			if !isWhite {
+				return true
+			}
+			break LeftLoop
+		case '.':
+			continue LeftLoop
+		default:
+			break LeftLoop
+		}
+	}
+	return false
+}
+
+// Check if King (piece) is in check on Vertical Axis
+func (b *Board) checkVerticalAxis(target int, isWhite bool) bool {
+UpVerLoop:
+	for i := target + 10; i < 88; i = i + 10 {
+
+		switch b.board[i] {
+		case 'r', 'q':
+			if isWhite {
+				return true
+			}
+			break UpVerLoop
+		case 'R', 'Q':
+			if !isWhite {
+				return true
+			}
+			break UpVerLoop
+		case '.':
+			continue UpVerLoop
+		default:
+			break UpVerLoop
+		}
+	}
+DownVerLoop:
+	for i := target - 10; i > 10; i = i - 10 {
+		// Should stop when off the board
+		switch b.board[i] {
+		case 'r', 'q':
+			if isWhite {
+				return true
+			}
+			break DownVerLoop
+		case 'R', 'Q':
+			if !isWhite {
+				return true
+			}
+			break DownVerLoop
+		case '.':
+			continue DownVerLoop
+		default:
+			break DownVerLoop
+		}
+	}
+	return false
+}
+
+func (b *Board) checkA1Diagonal(target int, isWhite bool) bool {
+a1h8Loop:
+	for i := target + 9; i < 89; i = i + 9 {
+		// Should stop when off the board
+		switch b.board[i] {
+		case 'b', 'q':
+			if isWhite {
+				return true
+			}
+			break a1h8Loop
+		case 'B', 'Q':
+			if !isWhite {
+				return true
+			}
+			break a1h8Loop
+		case '.':
+			continue a1h8Loop
+		default:
+			break a1h8Loop
+		}
+	}
+h8a1Loop:
+	for i := target - 9; i > 10; i = i - 9 {
+		// Should stop when off the board
+		switch b.board[i] {
+		case 'b', 'q':
+			if isWhite {
+				return true
+			}
+			break h8a1Loop
+		case 'B', 'Q':
+			if !isWhite {
+				return true
+			}
+			break h8a1Loop
+		case '.':
+			continue h8a1Loop
+		default:
+			break h8a1Loop
+		}
+	}
+	return false
+}
+
+func (b *Board) checkH1Diagonal(target int, isWhite bool) bool {
+h1a8Loop:
+	for i := target + 11; i < 89; i = i + 11 {
+		// Should stop when off the board
+		switch b.board[i] {
+		case 'b', 'q':
+			if isWhite {
+				return true
+			}
+			break h1a8Loop
+		case 'B', 'Q':
+			if !isWhite {
+				return true
+			}
+			break h1a8Loop
+		case '.':
+			continue h1a8Loop
+		default:
+			break h1a8Loop
+		}
+	}
+a8h1Loop:
+	for i := target - 11; i > 10; i = i - 11 {
+		// Should stop when off the board
+		switch b.board[i] {
+		case 'b', 'q':
+			if isWhite {
+				return true
+			}
+			break a8h1Loop
+		case 'B', 'Q':
+			if !isWhite {
+				return true
+			}
+			break a8h1Loop
+		case '.':
+			continue a8h1Loop
+		default:
+			break a8h1Loop
+		}
+	}
+	return false
+}
+
+// Check for Knight, Kings or Pawns in Proximity of Piece
+func (b *Board) checkProximity(target int, isWhite bool) bool {
+
+	// The immediate Proximity
+	A := b.board[target-1]
+	B := b.board[target+1]
+	C := b.board[target-11] // Pawn
+	D := b.board[target+11] // Pawn
+	E := b.board[target-9]  // Pawn
+	F := b.board[target+9]  // Pawn
+	G := b.board[target-10]
+	H := b.board[target+10]
+
+	var N, M, O, P, S, T byte
+	// Possible Knight Positions
+	if target > 18 {
+		O = b.board[target-21]
+		P = b.board[target-19]
+		T = b.board[target-12]
+	} else {
+		O = '.'
+		P = '.'
+		T = '.'
+	}
+
+	if target < 80 {
+		N = b.board[target+21]
+		M = b.board[target+19]
+		S = b.board[target+12]
+	} else {
+		N = '.'
+		M = '.'
+		S = '.'
+	}
+	Q := b.board[target+8]
+	R := b.board[target-8]
+
+	if isWhite {
+		// for white player
+		switch byte('k') {
+		case A, B, C, D, E, F, G, H:
+			return true
+		}
+
+		switch byte('p') {
+		case D, F:
+			return true
+		}
+		switch byte('n') {
+		case N, M, O, P, Q, R, S, T:
+			return true
+		}
+	} else {
+		// for white player
+		switch byte('K') {
+		case A, B, C, D, E, F, G, H:
+			return true
+		}
+
+		switch byte('P') {
+		case E, C:
+			return true
+		}
+		switch byte('N') {
+		case N, M, O, P, Q, R, S, T:
+			return true
+		}
+	}
+	return false
 }
