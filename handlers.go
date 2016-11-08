@@ -76,7 +76,8 @@ func NewGame(w http.ResponseWriter,
 
 	// Key Value Pair
 	value := []byte(game.Position())
-	key := []byte(time.Now().Format("15:04:05"))
+	//key := []byte(time.Now().Format("15:04:05"))
+	key := []byte(time.Now().Unix())
 	// Add to Database
 	err := db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte("games"))
